@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@firebase/database": "^1.0.20",
     "@reduxjs/toolkit": "^2.8.2",
+    "firebase": "^11.10.0",
     "fusioncharts": "^4.1.2",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",

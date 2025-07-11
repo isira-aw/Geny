@@ -1,10 +1,30 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { getDatabase, ref, onValue } from 'firebase/database';
+import { initializeApp } from 'firebase/app';
+import { AppDispatch } from './store';
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCDNEo0p5cRCo9MI-0v4fVyI8CWrewfNDM",
+  authDomain: "genmonitoring-7a26e.firebaseapp.com",
+  databaseURL: "https://genmonitoring-7a26e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "genmonitoring-7a26e",
+  storageBucket: "genmonitoring-7a26e.firebasestorage.app",
+  messagingSenderId: "708707703373",
+  appId: "1:708707703373:web:d1fdf146e1d4a4f5881a04"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 export interface GeneratorState {
   // User-controllable values
   mode: 'OFF' | 'MAN' | 'AUTO' | 'TEST';
   mainsPowerOn: boolean;
   generatorPowerOn: boolean;
+
+   mainVoltage: number;
   
   // Read-only system values
   power: number;
@@ -73,21 +93,23 @@ const initialState: GeneratorState = {
   mode: 'AUTO',
   mainsPowerOn: true,
   generatorPowerOn: true,
+
+  mainVoltage: 0, // Add this line
   
   // Read-only system values
   power: 0,
   frequency: 0,
-  voltage: { phaseN: 240, phasePh: 415 },
-  current: { l1: 62, l2: 73, l3: 59 },
-  rpm: 1499,
-  powerFactor: 1,
-  engineState: 'hello',
-  breakerState: 'IsOper',
-  runningHours: 12.9,
-  maintenanceTimer: 10000,
-  gensetKwh: 1.8,
-  gensetKvarh: 2,
-  batteryVoltage: 28.3,
+  voltage: { phaseN: 0, phasePh: 0 },
+  current: { l1: 0, l2: 0, l3: 0 },
+  rpm: 0,
+  powerFactor: 0,
+  engineState: '',
+  breakerState: '',
+  runningHours: 0,
+  maintenanceTimer: 0,
+  gensetKwh: 0,
+  gensetKvarh: 0,
+  batteryVoltage: 0,
   
   // Analog inputs
   analogInputs: {
@@ -100,7 +122,7 @@ const initialState: GeneratorState = {
   // Binary inputs
   binaryInputs: {
     mcbFeedback: false,
-    gcbFeedback: true,
+    gcbFeedback: false,
     fuelLeakage: false,
     notUsed1: false,
     notUsed2: false,
@@ -111,8 +133,8 @@ const initialState: GeneratorState = {
   
   // Binary outputs
   binaryOutputs: {
-    ecuPowerRelay: true,
-    gcbCloseOpen: true,
+    ecuPowerRelay: false,
+    gcbCloseOpen: false,
     mcbCloseOpen: false,
     notUsed1: false,
     notUsed2: false,
@@ -144,8 +166,8 @@ const generatorSlice = createSlice({
       state.generatorPowerOn = !state.generatorPowerOn;
     },
     
-    // System data updates (read-only, updated by simulation)
-    updateSystemData: (state, action: PayloadAction<Partial<Omit<GeneratorState, 'mode' | 'mainsPowerOn' | 'generatorPowerOn' | 'analogInputs' | 'binaryInputs' | 'binaryOutputs' | 'alarms'>>>) => {
+    // System data updates (read-only, updated from Firebase)
+    updateFromFirebase: (state, action: PayloadAction<Partial<GeneratorState>>) => {
       Object.assign(state, action.payload);
     },
     
@@ -167,11 +189,51 @@ const generatorSlice = createSlice({
   },
 });
 
+// // Firebase listener setup
+// export const setupFirebaseListeners = (dispatch: any) => {
+//   const dbRef = ref(database);
+  
+//   onValue(dbRef, (snapshot) => {
+//     const data = snapshot.val();
+    
+//     if (data) {
+//       // Update main state
+//       dispatch(generatorSlice.actions.updateFromFirebase({
+//         batteryVoltage: data.Sensor?.batteryVoltage || 0,
+//         // Add other fields from Firebase as needed
+//       }));
+      
+//       // You can add more specific updates here for different parts of the state
+//       // For example:
+//       // dispatch(generatorSlice.actions.updateAnalogInputs({
+//       //   coolantTemp: data.Sensor?.coolantTemp || null
+//       // }));
+//     }
+//   });
+// };
+// Firebase listener setup
+export const setupFirebaseListeners = (dispatch: AppDispatch) => {
+  const dbRef = ref(database);
+  
+  onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    
+    if (data) {
+      // Update main state
+      dispatch(generatorSlice.actions.updateFromFirebase({
+        batteryVoltage: data.Sensor?.batteryVoltage || 0,
+        mainVoltage: data.Sensor?.mainVoltage || 0,
+
+      }));
+    }
+  });
+};
+
 export const {
   setMode,
   toggleMainsPower,
   toggleGeneratorPower,
-  updateSystemData,
+  updateFromFirebase,
   updateAnalogInputs,
   updateBinaryInputs,
   updateBinaryOutputs,
