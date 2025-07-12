@@ -5,17 +5,7 @@ export const AlarmSystem: React.FC = () => {
   const [alarms, setAlarms] = useState(['System initialized', 'Generator 2 started']);
   const [isMuted, setIsMuted] = useState(false);
 
-  const alarmMessages = [
-    'Temperature warning detected',
-    'Fuel level low',
-    'Maintenance required',
-    'System check completed',
-    'Generator load balanced',
-    'Cooling system active',
-    'Voltage fluctuation detected',
-    'Oil pressure normal',
-    'Battery charging',
-    'System optimization complete'
+  const alarmMessages = [""
   ];
 
   // Add random alarms occasionally
