@@ -1,33 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Battery, Gauge } from "lucide-react";
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { ref, onValue } from "firebase/database";
 import ReactSpeedometer from "react-d3-speedometer";
+import { database } from "../firebase/firebase"; 
 
-// Firebase config (replace with yours if different)
-const firebaseConfig = {
-  apiKey: "AIzaSyCDNEo0p5cRCo9MI-0v4fVyI8CWrewfNDM",
-  authDomain: "genmonitoring-7a26e.firebaseapp.com",
-  databaseURL:
-    "https://genmonitoring-7a26e-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "genmonitoring-7a26e",
-  storageBucket: "genmonitoring-7a26e.appspot.com",
-  messagingSenderId: "708707703373",
-  appId: "1:708707703373:web:d1fdf146e1d4a4f5881a04",
-};
-
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
-const realMaxKilowatts = 250;
+const realMaxKilowatts = 300;
 const gaugeMax = 180;
-const rpm=500;
+const rpm = 1000;
 
 export const SpeedMeters: React.FC = () => {
   const [kilowatts, setKilowatts] = useState(0);
-  // const [rpm] = useState(1200);
   const [batteryLife, setBatteryLife] = useState(0);
   const [showBattery, setShowBattery] = useState(false);
+
 
   // Listen to Firebase Sensor data
   useEffect(() => {
@@ -85,13 +70,13 @@ export const SpeedMeters: React.FC = () => {
         <span className="text-xs text-gray-600">RPM</span>
 
         <ReactSpeedometer
-          maxValue={180} 
+          maxValue={1000} 
           // value={Math.min(Math.max((rpm / 2000) * 180, 0.01), 179.99)} 
           value={Math.min(
-                    Math.max((rpm/1000) * gaugeMax, 0.01),
+                    Math.max(rpm * gaugeMax, 0.01),
                     gaugeMax - 0.01
                   )}
-          customSegmentStops={[0, 180]}
+          customSegmentStops={[0, 1000]}
           segmentColors={[
             "#70da14ff",
             "#fbff25ff",

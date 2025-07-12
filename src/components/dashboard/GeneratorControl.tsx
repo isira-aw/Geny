@@ -9,8 +9,8 @@ import {
 export const GeneratorControl: React.FC = () => {
   const [generator1, setGenerator1] = useState(false);
   const [generator2, setGenerator2] = useState(true);
-  const [generator1Value, setGenerator1Value] = useState(0);
-  const [generator2Value, setGenerator2Value] = useState(5);
+  const [, setGenerator1Value] = useState(0);
+  const [, setGenerator2Value] = useState(5);
 
   // Real-time value updates
   useEffect(() => {
@@ -54,7 +54,7 @@ export const GeneratorControl: React.FC = () => {
       </div>
 
       {/* Generator Icons */}
-      <div className="flex items-center justify-center space-x-10 mb-6">
+      <div className="flex items-center justify-center space-x-8 mb-5">
         {/* Generator 1 */}
         <div className="text-center">
           <div className="relative flex items-center space-x-2 justify-center">

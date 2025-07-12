@@ -1,4 +1,3 @@
-import React from 'react';
 
 export const BarGraphs = () => {
   // Configurable threshold values
