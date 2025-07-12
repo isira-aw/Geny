@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const BarGraphs = () => {
   // Configurable threshold values
   const overloadThreshold = 85;
