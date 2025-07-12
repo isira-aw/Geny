@@ -19,13 +19,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-const realMaxKilowatts = 250;
+const realMaxKilowatts = 200;
 const gaugeMax = 180;
 const rpm=500;
 
 export const SpeedMeters: React.FC = () => {
   const [kilowatts, setKilowatts] = useState(0);
-  // const [rpm] = useState(1200);
   const [batteryLife, setBatteryLife] = useState(0);
   const [showBattery, setShowBattery] = useState(false);
 
@@ -57,13 +56,13 @@ export const SpeedMeters: React.FC = () => {
               <div style={{ margin: "50px" }}>
                 <span className="text-sm text-gray-600">kilowatts</span>
                 <ReactSpeedometer
-                  maxValue={200}
+                  maxValue={1000}
                   value={Math.min(
                     Math.max((kilowatts / realMaxKilowatts) * gaugeMax, 0.01),
                     gaugeMax - 0.01
                   )}
                   currentValueText={`KiloWatts: ${kilowatts}`}
-                  customSegmentStops={[0, 45, 90, 135, 200]}
+                  customSegmentStops={[0, 45, 90, 300, 500]}
                   segmentColors={[
                     "#70da14ff",
                     "#fbff25ff",
