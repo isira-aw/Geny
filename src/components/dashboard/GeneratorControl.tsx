@@ -1,24 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { Power, Zap } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  Zap,
+  Factory,
+  ArrowBigLeftDashIcon,
+  ArrowBigRightDashIcon,
+} from "lucide-react";
 
 export const GeneratorControl: React.FC = () => {
   const [generator1, setGenerator1] = useState(false);
   const [generator2, setGenerator2] = useState(true);
-  const [generator1Value, setGenerator1Value] = useState(20);
-  const [generator2Value, setGenerator2Value] = useState(35);
+  const [generator1Value, setGenerator1Value] = useState(0);
+  const [generator2Value, setGenerator2Value] = useState(5);
 
   // Real-time value updates
   useEffect(() => {
     const interval = setInterval(() => {
-      setGenerator1Value(prev => Math.max(0, Math.min(100, prev + (Math.random() - 0.5) * 5)));
-      setGenerator2Value(prev => Math.max(0, Math.min(100, prev + (Math.random() - 0.5) * 5)));
-    }, 2000);
+      setGenerator1Value(0);
+      setGenerator2Value(0);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const toggleGenerator = (generator: 'generator1' | 'generator2') => {
-    if (generator === 'generator1') {
+  const toggleGenerator = (generator: "generator1" | "generator2") => {
+    if (generator === "generator1") {
       setGenerator1(!generator1);
     } else {
       setGenerator2(!generator2);
@@ -35,44 +40,62 @@ export const GeneratorControl: React.FC = () => {
       {/* Power Values Display */}
       <div className="flex justify-between mb-6">
         <div className="text-center">
-          <div className="text-2xl font-bold">{Math.round(generator1Value)}KW</div>
-          <div className="text-sm text-gray-400">Gen 1</div>
+          <div className="text-2xl font-bold">--KW</div>
+          <div className="text-sm text-gray-400"> Main line </div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold">{Math.round(generator2Value)}KW</div>
-          <div className="text-sm text-gray-400">Gen 2</div>
+          <div className="text-2xl font-bold">--KW</div>
+          <div className="text-sm text-gray-400"> Factory </div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold">{Math.round(generator1Value + generator2Value)}KW</div>
-          <div className="text-sm text-gray-400">Total</div>
+          <div className="text-2xl font-bold">--KW</div>
+          <div className="text-sm text-gray-400"> Generator </div>
         </div>
       </div>
 
       {/* Generator Icons */}
-      <div className="flex items-center justify-center space-x-8 mb-6">
+      <div className="flex items-center justify-center space-x-10 mb-6">
+        {/* Generator 1 */}
         <div className="text-center">
-          <div className="relative">
-            <Zap className={`w-12 h-12 ${generator1 ? 'text-red-500' : 'text-gray-500'}`} />
-            <div className="absolute -top-2 -right-2 bg-gray-700 rounded-full px-2 py-1 text-xs">
-              {Math.round(generator1Value)}
-            </div>
+          <div className="relative flex items-center space-x-2 justify-center">
+            
+            <Zap
+              className={`w-12 h-12 ${
+                generator1 ? "text-red-500" : "text-gray-500"
+              }`}
+            />
+            <ArrowBigRightDashIcon
+              className={`w-12 h-12 ${
+                generator1 ? "text-red-500" : "text-gray-500"
+              }`}
+            />
+            
           </div>
         </div>
-        
-        <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center">
-          <Power className="w-8 h-8 text-gray-300" />
+
+        {/* Factory */}
+        <div className="w-20 h-20 flex items-center justify-center">
+          <Factory className="w-20 h-20 text-gray-300" />
         </div>
-        
+
+        {/* Generator 2 */}
         <div className="text-center">
-          <div className="relative">
-            <div className={`w-12 h-12 rounded-full border-4 flex items-center justify-center text-xl font-bold ${
-              generator2 ? 'border-green-500 bg-green-500 text-white' : 'border-gray-500 text-gray-500'
-            }`}>
+          <div className="relative flex items-center space-x-2 justify-center">
+            <ArrowBigLeftDashIcon
+              className={`w-12 h-12 ${
+                generator2 ? "text-green-500" : "text-gray-500"
+              }`}
+            />
+            <div
+              className={`w-12 h-12 rounded-full border-4 flex items-center justify-center text-xl font-bold ${
+                generator2
+                  ? "border-green-500 bg-green-500 text-white"
+                  : "border-gray-500 text-gray-500"
+              }`}
+            >
               G
             </div>
-            <div className="absolute -top-2 -right-2 bg-gray-700 rounded-full px-2 py-1 text-xs">
-              {Math.round(generator2Value)}
-            </div>
+            
           </div>
         </div>
       </div>
@@ -80,25 +103,25 @@ export const GeneratorControl: React.FC = () => {
       {/* Control Buttons */}
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => toggleGenerator('generator1')}
+          onClick={() => toggleGenerator("generator1")}
           className={`py-3 px-4 rounded-lg font-bold text-lg transition-colors ${
-            generator1 
-              ? 'bg-red-600 hover:bg-red-700 text-white' 
-              : 'bg-gray-600 hover:bg-gray-700 text-white'
+            generator1
+              ? "bg-red-600 hover:bg-red-700 text-white"
+              : "bg-gray-600 hover:bg-gray-700 text-white"
           }`}
         >
-          {generator1 ? 'OFF' : 'OFF'}
+          {generator1 ? "OFF" : "ON"}
         </button>
-        
+
         <button
-          onClick={() => toggleGenerator('generator2')}
+          onClick={() => toggleGenerator("generator2")}
           className={`py-3 px-4 rounded-lg font-bold text-lg transition-colors ${
-            generator2 
-              ? 'bg-green-600 hover:bg-green-700 text-white' 
-              : 'bg-gray-600 hover:bg-gray-700 text-white'
+            generator2
+              ? "bg-green-600 hover:bg-green-700 text-white"
+              : "bg-gray-600 hover:bg-gray-700 text-white"
           }`}
         >
-          {generator2 ? 'ON' : 'ON'}
+          {generator2 ? "OFF" : "ON"}
         </button>
       </div>
     </div>

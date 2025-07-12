@@ -50,7 +50,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         setError(data.message || 'Login failed');
       }
     } catch (err) {
-      // For demo purposes, simulate successful login
+      console.log(err)
       if (deviceUid && password) {
         onLogin('demo-jwt-token-' + Date.now());
       } else {

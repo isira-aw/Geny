@@ -1,38 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-export const BarGraphs: React.FC = () => {
-  const [barGraphData, setBarGraphData] = useState([
-    [85, 92, 78],
-    [76, 88, 95],
-    [90, 82, 87],
-    [88, 91, 79],
-    [83, 86, 92]
-  ]);
-
-  const graphLabels = [
-    ['L1-N', 'L2-N', 'L3-N'],
-    ['L1-L2', 'L2-L3', 'L3-L1'],
-    ['L1', 'L2', 'L3'],
-    ['L1-N', 'L2-N', 'L3-N'],
-    ['L1-L2', 'L2-L3', 'L3-L1']
-  ];
-
-  const graphTitles = ['Ph-N [V]', 'Ph-Ph [V]', 'Current [A]', 'Ph-N [V]', 'Ph-Ph [V]'];
+export const BarGraphs = () => {
+  // Configurable threshold values
   const overloadThreshold = 85;
   const underloadThreshold = 25;
+  const maxValue = 100;
+  const chartHeight = 160;
 
-  // Real-time value updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBarGraphData(prevData => 
-        prevData.map(bars => 
-          bars.map(value => Math.max(0, Math.min(100, value + (Math.random() - 0.5) * 3)))
-        )
-      );
-    }, 2000);
+  // Calculate position for threshold lines
+  const getThresholdPosition = (threshold: number) => {
+    return (threshold / maxValue) * chartHeight;
+  };
 
-    return () => clearInterval(interval);
-  }, []);
+  // Determine bar color based on value
+  const getBarColor = (value: number) => {
+    if (value >= overloadThreshold) return 'bg-red-500';
+    if (value <= underloadThreshold) return 'bg-orange-400';
+    return 'bg-green-500';
+  };
+
+  // Calculate bar height
+  const getBarHeight = (value: number) => {
+    return (value / maxValue) * chartHeight;
+  };
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-lg">
@@ -50,50 +40,290 @@ export const BarGraphs: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        {barGraphData.map((bars, graphIndex) => (
-          <div key={graphIndex} className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 text-center">
-              {graphTitles[graphIndex]}
-            </h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+
+        {/* Histogram 1: Ph-N [V] */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-gray-700 text-center mb-4">Ph-N [V]</h4>
+          <div className="relative" style={{ height: `${chartHeight + 40}px` }}>
             
-            <div className="relative h-32 flex items-end justify-center space-x-2">
-              {/* Overload line */}
-              <div 
-                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed"
-                style={{ bottom: `${(overloadThreshold / 100) * 128}px` }}
-              ></div>
+            {/* Chart area with black X-axis */}
+            <div className="relative border-b-2 border-black" style={{ height: `${chartHeight}px` }}>
               
-              {/* Underload line */}
+              {/* Red threshold lines */}
               <div 
-                className="absolute left-0 right-0 border-t-2 border-orange-400 border-dashed"
-                style={{ bottom: `${(underloadThreshold / 100) * 128}px` }}
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(overloadThreshold)}px` }}
+              ></div>
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(underloadThreshold)}px` }}
               ></div>
 
-              {bars.map((value, barIndex) => (
-                <div key={barIndex} className="flex flex-col items-center">
-                  <div
-                    className={`w-6 rounded-t transition-all duration-500 ${
-                      value > overloadThreshold 
-                        ? 'bg-red-500' 
-                        : value < underloadThreshold 
-                        ? 'bg-orange-400' 
-                        : 'bg-green-500'
-                    }`}
-                    style={{ height: `${(value / 100) * 128}px` }}
+              {/* Bars */}
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center items-end space-x-3">
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(85)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(85)}px` }}
                   ></div>
-                  <span className="text-xs text-gray-600 mt-1">
-                    {graphLabels[graphIndex][barIndex]}
-                  </span>
-                  <span className="text-xs font-semibold text-gray-800">
-                    {Math.round(value)}
-                  </span>
                 </div>
-              ))}
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(92)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(92)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(78)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(78)}px` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            {/* X-axis labels and values */}
+            <div className="flex justify-center items-start space-x-3 mt-2">
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L1-N</span>
+                <span className="text-xs font-semibold text-gray-800">85</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L2-N</span>
+                <span className="text-xs font-semibold text-gray-800">92</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L3-N</span>
+                <span className="text-xs font-semibold text-gray-800">78</span>
+              </div>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Histogram 2: Ph-Ph [V] */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-gray-700 text-center mb-4">Ph-Ph [V]</h4>
+          <div className="relative" style={{ height: `${chartHeight + 40}px` }}>
+            
+            <div className="relative border-b-2 border-black" style={{ height: `${chartHeight}px` }}>
+              
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(overloadThreshold)}px` }}
+              ></div>
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(underloadThreshold)}px` }}
+              ></div>
+
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center items-end space-x-3">
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(76)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(76)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(88)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(88)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(95)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(95)}px` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center items-start space-x-3 mt-2">
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L1-L2</span>
+                <span className="text-xs font-semibold text-gray-800">76</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L2-L3</span>
+                <span className="text-xs font-semibold text-gray-800">88</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L3-L1</span>
+                <span className="text-xs font-semibold text-gray-800">95</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Histogram 3: Current [A] */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-gray-700 text-center mb-4">Current [A]</h4>
+          <div className="relative" style={{ height: `${chartHeight + 40}px` }}>
+            
+            <div className="relative border-b-2 border-black" style={{ height: `${chartHeight}px` }}>
+              
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(overloadThreshold)}px` }}
+              ></div>
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(underloadThreshold)}px` }}
+              ></div>
+
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center items-end space-x-3">
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(90)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(90)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(82)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(82)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(87)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(87)}px` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center items-start space-x-3 mt-2">
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L1</span>
+                <span className="text-xs font-semibold text-gray-800">90</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L2</span>
+                <span className="text-xs font-semibold text-gray-800">82</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L3</span>
+                <span className="text-xs font-semibold text-gray-800">87</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Histogram 4: Ph-N [V] */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-gray-700 text-center mb-4">Ph-N [V]</h4>
+          <div className="relative" style={{ height: `${chartHeight + 40}px` }}>
+            
+            <div className="relative border-b-2 border-black" style={{ height: `${chartHeight}px` }}>
+              
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(overloadThreshold)}px` }}
+              ></div>
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(underloadThreshold)}px` }}
+              ></div>
+
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center items-end space-x-3">
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(88)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(88)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(91)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(91)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(79)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(79)}px` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center items-start space-x-3 mt-2">
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L1-N</span>
+                <span className="text-xs font-semibold text-gray-800">88</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L2-N</span>
+                <span className="text-xs font-semibold text-gray-800">91</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L3-N</span>
+                <span className="text-xs font-semibold text-gray-800">79</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Histogram 5: Ph-Ph [V] */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-gray-700 text-center mb-4">Ph-Ph [V]</h4>
+          <div className="relative" style={{ height: `${chartHeight + 40}px` }}>
+            
+            <div className="relative border-b-2 border-black" style={{ height: `${chartHeight}px` }}>
+              
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(overloadThreshold)}px` }}
+              ></div>
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed z-10"
+                style={{ bottom: `${getThresholdPosition(underloadThreshold)}px` }}
+              ></div>
+
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center items-end space-x-3">
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(83)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(83)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(86)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(86)}px` }}
+                  ></div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div 
+                    className={`w-8 ${getBarColor(92)} rounded-t transition-all duration-300`}
+                    style={{ height: `${getBarHeight(92)}px` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center items-start space-x-3 mt-2">
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L1-L2</span>
+                <span className="text-xs font-semibold text-gray-800">83</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L2-L3</span>
+                <span className="text-xs font-semibold text-gray-800">86</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-600">L3-L1</span>
+                <span className="text-xs font-semibold text-gray-800">92</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
 };
+
+export default BarGraphs;
