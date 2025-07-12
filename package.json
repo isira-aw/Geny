@@ -10,15 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@firebase/database": "^1.0.20",
-    "@reduxjs/toolkit": "^2.8.2",
     "firebase": "^11.10.0",
-    "fusioncharts": "^4.1.2",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
+    "react-d3-speedometer": "^3.1.1",
     "react-dom": "^18.3.1",
-    "react-fusioncharts": "^4.1.0",
-    "react-redux": "^9.2.0"
+    "react-speedometer": "^0.1.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

@@ -1,27 +1,39 @@
-import React from 'react';
-import { Provider } from 'react-redux';
-import { store } from './store/store';
-import { useTheme } from './hooks/useTheme';
-import { Header } from './components/Header';
-import { GeneratorDashboard } from './components/GeneratorDashboard';
-
-function AppContent() {
-  // Initialize theme system
-  useTheme();
-
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-      <Header />
-      <GeneratorDashboard />
-    </div>
-  );
-}
+import React, { useState, useEffect } from 'react';
+import { LoginPage } from './components/LoginPage';
+import { Dashboard } from './components/Dashboard';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem('authToken');
+    if (savedToken) {
+      setToken(savedToken);
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = (authToken: string) => {
+    setToken(authToken);
+    setIsAuthenticated(true);
+    localStorage.setItem('authToken', authToken);
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('authToken');
+  };
+
   return (
-    <Provider store={store}>
-      <AppContent />
-    </Provider>
+    <div className="min-h-screen bg-gray-100">
+      {!isAuthenticated ? (
+        <LoginPage onLogin={handleLogin} />
+      ) : (
+        <Dashboard onLogout={handleLogout} />
+      )}
+    </div>
   );
 }
 
