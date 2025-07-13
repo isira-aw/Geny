@@ -9,8 +9,8 @@ import {
 export const GeneratorControl: React.FC = () => {
   const [generator1, setGenerator1] = useState(false);
   const [generator2, setGenerator2] = useState(true);
-  const [generator1Value, setGenerator1Value] = useState(0);
-  const [generator2Value, setGenerator2Value] = useState(5);
+  const [, setGenerator1Value] = useState(0);
+  const [, setGenerator2Value] = useState(5);
 
   // Real-time value updates
   useEffect(() => {
