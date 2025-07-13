@@ -1,4 +1,4 @@
-import React, { useState } from 'react'; // Removed useEffect since we don't need it
+import { useState } from 'react'; 
 import { LoginPage } from './components/LoginPage';
 import { Dashboard } from './components/Dashboard';
 

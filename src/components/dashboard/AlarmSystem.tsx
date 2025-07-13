@@ -5,7 +5,7 @@ export const AlarmSystem: React.FC = () => {
   const [alarms, setAlarms] = useState(['System initialized', 'Generator 2 started']);
   const [isMuted, setIsMuted] = useState(false);
 
-  const alarmMessages = [""
+  const alarmMessages = [" Generate a monitoring system live"
   ];
 
   // Add random alarms occasionally
@@ -22,7 +22,7 @@ export const AlarmSystem: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-gray-800 rounded-2xl p-6 text-white">
+    <div className="rounded-2xl shadow-lg p-4 bg-white text-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <AlertTriangle className="w-6 h-6 text-yellow-400" />
@@ -31,7 +31,7 @@ export const AlarmSystem: React.FC = () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setIsMuted(!isMuted)}
-            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 rounded-lg "
           >
             {isMuted ? (
               <VolumeX className="w-5 h-5 text-red-400" />
@@ -43,9 +43,9 @@ export const AlarmSystem: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-900 rounded-lg p-4 h-48 overflow-y-auto">
+      <div className="rounded-lg p-4 h-48 overflow-y-auto">
         {alarms.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-gray-800">
             <span>no alarm</span>
           </div>
         ) : (
@@ -55,8 +55,8 @@ export const AlarmSystem: React.FC = () => {
                 key={index}
                 className={`p-2 rounded text-sm transition-all duration-300 ${
                   index === 0 
-                    ? 'bg-yellow-900/50 border border-yellow-600 text-yellow-200' 
-                    : 'bg-gray-800 text-gray-300'
+                    ? 'bg-yellow-800 border border-yellow-600 text-yellow-200' 
+                    : 'bg-gray-500 text-gray-300'
                 }`}
               >
                 {alarm}
