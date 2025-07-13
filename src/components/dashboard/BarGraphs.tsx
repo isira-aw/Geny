@@ -68,33 +68,33 @@ const BarGraphs = () => {
   const YAxislist_5 = [0, 100];
 
   const getBarColor_1 = (value: number): string => {
-    if (value > upperLimit_1) return "#ff7253";
-    if (value < lowerLimit_1) return "#3ca2f1 ";
-    return "#77c03a";
+    if (value > upperLimit_1) return "#fc2e009a";
+    if (value < lowerLimit_1) return "#0050fd8a ";
+    return "#00ff007c";
   };
   const getBarColor_2 = (value: number): string => {
-    if (value > upperLimit_2) return "#ff7253";
-    if (value < lowerLimit_2) return "#3ca2f1 ";
-    return "#77c03a";
+    if (value > upperLimit_2) return "#fc2e009a";
+    if (value < lowerLimit_2) return "#0050fd8a ";
+    return "#00ff007c";
 
   };
 
   const getBarColor_3 = (value: number): string => {
-    if (value > upperLimit_3) return "#ff7253";
-    if (value < lowerLimit_3) return "#3ca2f1 ";
-    return "#77c03a";
+    if (value > upperLimit_3) return "#fc2e009a";
+    if (value < lowerLimit_3) return "#0050fd8a ";
+    return "#00ff007c";
   };
 
   const getBarColor_4 = (value: number): string => {
-    if (value > upperLimit_4) return "#ff7253";
-    if (value < lowerLimit_4) return "#3ca2f1 ";
-    return "#77c03a";
+    if (value > upperLimit_4) return "#fc2e009a";
+    if (value < lowerLimit_4) return "#0050fd8a ";
+    return "#00ff007c";
   };
 
   const getBarColor_5 = (value: number): string => {
-    if (value > upperLimit_5) return "#ff7253";
-    if (value < lowerLimit_5) return "#3ca2f1 ";
-    return "#77c03a";
+    if (value > upperLimit_5) return "#fc2e009a";
+    if (value < lowerLimit_5) return "#0050fd8a ";
+    return "#00ff007c";
   };
 
   return (
