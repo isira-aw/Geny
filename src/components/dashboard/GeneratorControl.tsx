@@ -31,7 +31,7 @@ export const GeneratorControl: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-800 rounded-2xl p-6 text-white">
+    <div className=" rounded-2xl shadow-lg p-4 bg-white">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold">Generator Control</h3>
         <Zap className="w-6 h-6 text-yellow-400" />

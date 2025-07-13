@@ -129,28 +129,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
         )}
       </nav>
 
-      {/* Dashboard Content */}
-      {activeTab === "dashboard" && (
-        <div className="max-w-7xl mx-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              <GeneratorControl />
-            </div>
-            <div className="lg:col-span-2">
-              <BarGraphs />
-            </div>
-            <div className="lg:col-span-1">
-              <AlarmSystem />
-            </div>
-            <div className="lg:col-span-1">
-              <SpeedMeters />
-            </div>
-            <div className="lg:col-span-1">
-              <DataTables />
-            </div>
-          </div>
-        </div>
-      )}
+{activeTab === "dashboard" && (
+  <div className="mx-auto p-6">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-2">
+      {/* LEFT COLUMN (narrower) */}
+      <div className="flex flex-col gap-2">
+          <GeneratorControl />
+        
+          <AlarmSystem />
+          
+          <DataTables />
+ 
+      </div>
+
+      {/* RIGHT COLUMN (wider) */}
+      <div className="flex flex-col gap-2">
+          <BarGraphs />
+          <SpeedMeters />
+        
+
+    </div>
+    </div>
+  </div>
+)}
+
+
 
       {/* Other Tab Contents */}
       {activeTab !== "dashboard" && (
