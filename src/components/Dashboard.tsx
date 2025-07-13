@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LogOut, BarChart3, Activity, Calendar, Settings, Menu, X } from 'lucide-react';
 import { GeneratorControl } from './dashboard/GeneratorControl';
-import BarGraphs  from './dashboard/BarGraphs';
+import  BarGraphs from './dashboard/BarGraphs';
 import { AlarmSystem } from './dashboard/AlarmSystem';
 import { SpeedMeters } from './dashboard/SpeedMeters';
 import { DataTables } from './dashboard/DataTables';

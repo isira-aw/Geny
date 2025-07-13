@@ -8,6 +8,7 @@ import {
   Cell,
   LabelList,
 } from "recharts";
+
 import { BarChart2Icon } from 'lucide-react';
 
 const BarGraphs = () => {
@@ -75,6 +76,7 @@ const BarGraphs = () => {
     if (value > upperLimit_2) return "#ff7253";
     if (value < lowerLimit_2) return "#3ca2f1 ";
     return "#77c03a";
+
   };
 
   const getBarColor_3 = (value: number): string => {
