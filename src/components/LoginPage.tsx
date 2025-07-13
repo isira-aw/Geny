@@ -25,41 +25,47 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [newDeviceName, setNewDeviceName] = useState('');
   const [newDeviceUid, setNewDeviceUid] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
 
-    try {
-      const response = await fetch('http://localhost:8088/devices/signIn', {
+  // LoginPage.tsx - Simplified handleLogin:
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+
+  try {
+    const response = await fetch('http://localhost:8088/devices/signIn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceUid, password }),
+    });
+
+    const data = await response.json();
+
+    if (data.success && data.token) {
+      // Login successful: Save token and proceed
+      localStorage.setItem('authToken', data.token);
+      onLogin(data.token);
+      
+      const configResponse = await fetch('http://localhost:8088/devices/config', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${data.token}`,
         },
-        body: JSON.stringify({
-          deviceUid,
-          password,
-        }),
       });
+      const configData = await configResponse.json();
+      console.log('✅ Device config:', configData); 
 
-      const data = await response.json();
-
-      if (data.success) {
-        onLogin(data.token);
-      } else {
-        setError(data.message || 'Login failed');
-      }
-    } catch (err) {
-      console.log(err)
-      if (deviceUid && password) {
-        onLogin('demo-jwt-token-' + Date.now());
-      } else {
-        setError('Please enter device UID and password');
-      }
-    } finally {
-      setLoading(false);
+      
+    } else {
+      setError(data.message || 'Invalid UID or password.');
     }
-  };
+  } catch (err) {
+    console.error('Login error:', err);
+    setError('Login failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDeviceSelect = (device: Device) => {
     setDeviceUid(device.uid);

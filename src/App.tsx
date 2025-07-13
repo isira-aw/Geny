@@ -4,7 +4,7 @@ import { Dashboard } from './components/Dashboard';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
+  const [, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('authToken');
