@@ -1,45 +1,90 @@
 import React, { useState, useEffect } from "react";
 import { Battery, Gauge } from "lucide-react";
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { ref, onValue } from "firebase/database";
 import ReactSpeedometer from "react-d3-speedometer";
+import { getDatabaseInstance, isFirebaseInitialized } from "../firebase/firebase";
 
-// Firebase config (replace with yours if different)
-const firebaseConfig = {
-  apiKey: "AIzaSyCDNEo0p5cRCo9MI-0v4fVyI8CWrewfNDM",
-  authDomain: "genmonitoring-7a26e.firebaseapp.com",
-  databaseURL:
-    "https://genmonitoring-7a26e-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "genmonitoring-7a26e",
-  storageBucket: "genmonitoring-7a26e.appspot.com",
-  messagingSenderId: "708707703373",
-  appId: "1:708707703373:web:d1fdf146e1d4a4f5881a04",
-};
-
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
-const realMaxKilowatts = 250;
+const realMaxKilowatts = 300;
 const gaugeMax = 180;
-const rpm=500;
+const rpm = 1000;
 
 export const SpeedMeters: React.FC = () => {
   const [kilowatts, setKilowatts] = useState(0);
-  // const [rpm] = useState(1200);
   const [batteryLife, setBatteryLife] = useState(0);
   const [showBattery, setShowBattery] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [firebaseError, setFirebaseError] = useState<string | null>(null);
 
-  // Listen to Firebase Sensor data
   useEffect(() => {
-    const sensorRef = ref(database, "Sensor");
-    const unsubscribe = onValue(sensorRef, (snapshot) => {
-      const data = snapshot.val();
-      setKilowatts(data?.mainVoltage ?? 0);
-      setBatteryLife(data?.batteryVoltage ?? 0);
-      console.log("Firebase update:", data);
-    });
-    return () => unsubscribe();
+    let unsubscribe: () => void;
+    let initializationCheck: NodeJS.Timeout;
+
+    const setupFirebaseListener = () => {
+      try {
+        const db = getDatabaseInstance();
+        const sensorRef = ref(db, "Sensor");
+        
+        unsubscribe = onValue(sensorRef, (snapshot) => {
+          const data = snapshot.val();
+          setKilowatts(data?.mainVoltage ?? 0);
+          setBatteryLife(data?.batteryVoltage ?? 0);
+          setIsLoading(false);
+          setFirebaseError(null);
+        });
+
+      } catch (error) {
+        console.error("Firebase connection error:", error);
+        setFirebaseError("Failed to connect to data source");
+        setIsLoading(false);
+      }
+    };
+
+    if (isFirebaseInitialized()) {
+      setupFirebaseListener();
+    } else {
+      initializationCheck = setInterval(() => {
+        if (isFirebaseInitialized()) {
+          clearInterval(initializationCheck);
+          setupFirebaseListener();
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+      if (initializationCheck) clearInterval(initializationCheck);
+    };
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-gray-900">Performance Meters</h3>
+          <Gauge className="w-10 h-10 text-blue-600 animate-pulse" />
+        </div>
+        <p className="text-gray-600">Loading data...</p>
+      </div>
+    );
+  }
+
+  if (firebaseError) {
+    return (
+      <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-bold text-gray-900">Performance Meters</h3>
+          <Gauge className="w-10 h-10 text-red-600" />
+        </div>
+        <p className="text-red-500">{firebaseError}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+        >
+          Retry Connection
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-lg">
@@ -47,12 +92,11 @@ export const SpeedMeters: React.FC = () => {
         <h3 className="text-lg font-bold text-gray-900">Performance Meters</h3>
         <Gauge className="w-10 h-10 text-blue-600" />
       </div>
-      <br />
-      <br />
+      <br /><br />
       <div className="grid grid-cols-1 gap-6 p-6">
         {/* Kilowatts Meter */}
         <div className="text-center">
-          <div className="relative w-32 h-32 mx-auto mb-4 ">
+          <div className="relative w-32 h-32 mx-auto mb-4">
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div style={{ margin: "50px" }}>
                 <span className="text-sm text-gray-600">kilowatts</span>
@@ -62,7 +106,7 @@ export const SpeedMeters: React.FC = () => {
                     Math.max((kilowatts / realMaxKilowatts) * gaugeMax, 0.01),
                     gaugeMax - 0.01
                   )}
-                  currentValueText={`KiloWatts: ${kilowatts}`}
+                  currentValueText={`KiloWatts: ${kilowatts.toFixed(2)}`}
                   customSegmentStops={[0, 45, 90, 135, 200]}
                   segmentColors={[
                     "#70da14ff",
@@ -76,37 +120,35 @@ export const SpeedMeters: React.FC = () => {
             </div>
           </div>
         </div>
-        <br />
+<br />
         {/* RPM Meter */}
-<div className="text-center">
-  <div className="relative w-32 h-32 mx-auto mb-4">
-    <div className="absolute inset-0 flex flex-col items-center justify-center">
-      <div style={{ margin: "50px" }}>
-        <span className="text-xs text-gray-600">RPM</span>
-
-        <ReactSpeedometer
-          maxValue={180} 
-          // value={Math.min(Math.max((rpm / 2000) * 180, 0.01), 179.99)} 
-          value={Math.min(
-                    Math.max((rpm/1000) * gaugeMax, 0.01),
+        <div className="text-center">
+          <div className="relative w-32 h-32 mx-auto mb-4">
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div style={{ margin: "50px" }}>
+                <span className="text-xs text-gray-600">RPM</span>
+                <ReactSpeedometer
+                  maxValue={1000}
+                  value={Math.min(
+                    Math.max(rpm, 0.01),
                     gaugeMax - 0.01
                   )}
-          customSegmentStops={[0, 180]}
-          segmentColors={[
-            "#70da14ff",
-            "#fbff25ff",
-            "#ff7e57ff",
-            "#f30018ff",
-          ]}
-          currentValueText={`RPM: ${rpm}`} 
-          textColor={"black"}
-        />
-      </div>
-    </div>
-  </div>
-  <div className="text-sm text-gray-600">Engine Speed</div>
-  <div className="text-xs text-gray-500 mt-1">PF: 1 R</div>
-</div>
+                  customSegmentStops={[0, 1000]}
+                  segmentColors={[
+                    "#70da14ff",
+                    "#fbff25ff",
+                    "#ff7e57ff",
+                    "#f30018ff",
+                  ]}
+                  currentValueText={`RPM: ${rpm}`}
+                  textColor={"black"}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="text-sm text-gray-600">Engine Speed</div>
+          <div className="text-xs text-gray-500 mt-1">PF: 1 R</div>
+        </div>
 
         {/* Battery Button */}
         <button
@@ -118,7 +160,7 @@ export const SpeedMeters: React.FC = () => {
         </button>
 
         {/* Battery Popup */}
-        {/* {showBattery && (
+        {showBattery && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-gray-700">
@@ -152,7 +194,7 @@ export const SpeedMeters: React.FC = () => {
               </div>
             </div>
           </div>
-        )} */}
+        )}
       </div>
     </div>
   );

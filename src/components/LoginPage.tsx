@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Plus, Power, Trash2 } from 'lucide-react';
+import React, { useState } from "react";
+import { Plus, Power, Trash2 } from "lucide-react";
+import { initializeFirebase } from "../components/firebase/firebase";
 
 interface Device {
   id: string;
@@ -13,49 +14,79 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [deviceUid, setDeviceUid] = useState('');
-  const [password, setPassword] = useState('');
+  const [deviceUid, setDeviceUid] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [devices, setDevices] = useState<Device[]>([
-    { id: '1', name: 'Osanda2', uid: '0000', lastLogin: '2024-01-15 14:30' },
-    { id: '2', name: 'Osanada1', uid: '00000000', lastLogin: '2024-01-14 09:15' }
+    { id: "1", name: "Osanda2", uid: "0000", lastLogin: "2024-01-15 14:30" },
+    {
+      id: "2",
+      name: "Osanada1",
+      uid: "00000000",
+      lastLogin: "2024-01-14 09:15",
+    },
   ]);
   const [showAddDevice, setShowAddDevice] = useState(false);
-  const [newDeviceName, setNewDeviceName] = useState('');
-  const [newDeviceUid, setNewDeviceUid] = useState('');
+  const [newDeviceName, setNewDeviceName] = useState("");
+  const [newDeviceUid, setNewDeviceUid] = useState("");
 
+  // LoginPage.tsx - Simplified handleLogin:
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('http://localhost:8088/devices/signIn', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          deviceUid,
-          password,
-        }),
+      const response = await fetch("http://localhost:8088/devices/signIn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deviceUid, password }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && data.token) {
+        // Login successful: Save token and proceed
+        localStorage.setItem("authToken", data.token);
         onLogin(data.token);
+
+        const configResponse = await fetch(
+          "http://localhost:8088/devices/config",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${data.token}`,
+            },
+          }
+        );
+
+        const configData = await configResponse.json();
+        console.log("✅ Full response:", configData);
+        const deviceConfig = configData.data;
+
+        console.log("✅ API Key:", deviceConfig.apiKey);
+        console.log("✅ Auth Domain:", deviceConfig.authDomain);
+        console.log("✅ Database URL:", deviceConfig.databaseURL);
+        console.log("✅ Project ID:", deviceConfig.projectId);
+        console.log("✅ Storage Bucket:", deviceConfig.storageBucket);
+        console.log("✅ Messaging Sender ID:", deviceConfig.messagingSenderId);
+        console.log("✅ App ID:", deviceConfig.appId);
+        initializeFirebase({
+          apiKey: deviceConfig.apiKey,
+          authDomain: deviceConfig.authDomain,
+          databaseURL: deviceConfig.databaseURL,
+          projectId: deviceConfig.projectId,
+          storageBucket: deviceConfig.storageBucket,
+          messagingSenderId: deviceConfig.messagingSenderId,
+          appId: deviceConfig.appId,
+        });
       } else {
-        setError(data.message || 'Login failed');
+        setError(data.message || "Invalid UID or password.");
       }
     } catch (err) {
-      console.log(err)
-      if (deviceUid && password) {
-        onLogin('demo-jwt-token-' + Date.now());
-      } else {
-        setError('Please enter device UID and password');
-      }
+      console.error("Login error:", err);
+      setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -73,20 +104,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         uid: newDeviceUid,
       };
       setDevices([...devices, newDevice]);
-      setNewDeviceName('');
-      setNewDeviceUid('');
+      setNewDeviceName("");
+      setNewDeviceUid("");
       setShowAddDevice(false);
     }
   };
 
   const handleRemoveDevice = (deviceId: string) => {
-    setDevices(devices.filter(d => d.id !== deviceId));
+    setDevices(devices.filter((d) => d.id !== deviceId));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* Login Form */}
         <div className="lg:col-span-1 bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
@@ -94,7 +124,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <Power className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Device Login</h1>
-            <p className="text-gray-600 mt-2">Access your monitoring dashboard</p>
+            <p className="text-gray-600 mt-2">
+              Access your monitoring dashboard
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
@@ -137,7 +169,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
         </div>
@@ -146,7 +178,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl shadow-2xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Recent Devices</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                Recent Devices
+              </h2>
               <button
                 onClick={() => setShowAddDevice(true)}
                 className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
@@ -168,10 +202,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                         <Power className="w-5 h-5 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{device.name}</h3>
-                        <p className="text-sm text-gray-600">UID: {device.uid}</p>
+                        <h3 className="font-semibold text-gray-900">
+                          {device.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          UID: {device.uid}
+                        </p>
                         {device.lastLogin && (
-                          <p className="text-xs text-gray-500">Last: {device.lastLogin}</p>
+                          <p className="text-xs text-gray-500">
+                            Last: {device.lastLogin}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -193,7 +233,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           {/* Add Device Form */}
           {showAddDevice && (
             <div className="bg-white rounded-2xl shadow-2xl p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Add New Device</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">
+                Add New Device
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"

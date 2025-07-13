@@ -9,6 +9,8 @@ import {
   LabelList,
 } from "recharts";
 
+import { BarChart2Icon } from 'lucide-react';
+
 const BarGraphs = () => {
   const data_1 = [
     { name: "L1-N", value: 85 },
@@ -74,6 +76,7 @@ const BarGraphs = () => {
     if (value > upperLimit_2) return "#ff7253";
     if (value < lowerLimit_2) return "#3ca2f1 ";
     return "#77c03a";
+
   };
 
   const getBarColor_3 = (value: number): string => {
@@ -95,7 +98,11 @@ const BarGraphs = () => {
   };
 
   return (
-    <div className="container mx-auto  bg-gray-800 rounded-2xl text-white">
+    <div className=" mx-auto  bg-gray-800 rounded-2xl text-white">
+      <div className="flex items-center justify-between  ">
+        <h3 className="text-lg font-bold text-white m-5">System Data</h3>
+        <BarChart2Icon className="w-12 h-12 p-2 text-blue-600" />
+      </div>
       <div className="flex flex-wrap justify-center gap-2">
         <div
           className="min-w-[250px] flex-grow  p-2 rounded shadow max-w-xs"
