@@ -38,7 +38,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8088/devices/signIn", {
+      const response = await fetch("https://a2z-geny-backend-production.up.railway.app/devices/signIn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ deviceUid, password }),
@@ -52,7 +52,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         onLogin(data.token);
 
         const configResponse = await fetch(
-          "http://localhost:8088/devices/config",
+          "https://a2z-geny-backend-production.up.railway.app/devices/config",
           {
             method: "POST",
             headers: {
