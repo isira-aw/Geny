@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Power, Trash2 } from "lucide-react";
+import { initializeFirebase } from "../components/firebase/firebase";
 
 interface Device {
   id: string;
@@ -62,7 +63,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
         const configData = await configResponse.json();
         console.log("✅ Full response:", configData);
-
         const deviceConfig = configData.data;
 
         console.log("✅ API Key:", deviceConfig.apiKey);
@@ -72,7 +72,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         console.log("✅ Storage Bucket:", deviceConfig.storageBucket);
         console.log("✅ Messaging Sender ID:", deviceConfig.messagingSenderId);
         console.log("✅ App ID:", deviceConfig.appId);
-
+        initializeFirebase({
+          apiKey: deviceConfig.apiKey,
+          authDomain: deviceConfig.authDomain,
+          databaseURL: deviceConfig.databaseURL,
+          projectId: deviceConfig.projectId,
+          storageBucket: deviceConfig.storageBucket,
+          messagingSenderId: deviceConfig.messagingSenderId,
+          appId: deviceConfig.appId,
+        });
       } else {
         setError(data.message || "Invalid UID or password.");
       }
