@@ -33,7 +33,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 ">
       {/* Navigation Bar */}
       <nav className="bg-white shadow-lg border-b">
         <div className="max-w-7xl mx-auto px-4">
@@ -129,31 +129,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
         )}
       </nav>
 
-{activeTab === "dashboard" && (
-  <div className="mx-auto p-6">
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-2">
-      {/* LEFT COLUMN (narrower) */}
-      <div className="flex flex-col gap-2">
-          <GeneratorControl />
-        
-          <AlarmSystem />
-          
-          <DataTables />
- 
-      </div>
+      {activeTab === "dashboard" && (
+        <div className="mx-auto p-6 ">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-2">
+            {/* LEFT COLUMN (narrower) */}
+            <div className="flex flex-col gap-2">
+              <GeneratorControl />
 
-      {/* RIGHT COLUMN (wider) */}
-      <div className="flex flex-col gap-2">
-          <BarGraphs />
-          <SpeedMeters />
-        
+              <DataTables />
+            </div>
 
-    </div>
-    </div>
-  </div>
-)}
+            {/* RIGHT COLUMN (wider) */}
+            <div className="flex flex-col gap-2">
+              <BarGraphs />
 
+              <SpeedMeters />
 
+              <AlarmSystem />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Other Tab Contents */}
       {activeTab !== "dashboard" && (
