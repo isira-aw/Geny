@@ -6,16 +6,17 @@ import {
   isFirebaseInitialized,
 } from "../firebase/firebase";
 
-const realMaxKilowatts = 500;
-const realMaxRPM = 1000;
-const rpm = 500;
-
 export const SpeedMeters: React.FC = () => {
   const [kilowatts, setKilowatts] = useState(0);
   const [batteryLife, setBatteryLife] = useState(0);
+  const [rpm, setrpm] = useState(0);
   const [showBattery, setShowBattery] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseError, setFirebaseError] = useState<string | null>(null);
+
+  const realMaxRPM = 2000;
+  const realMaxKilowatts = 1000;
+  const upperlimit = { value: 800 };
 
   useEffect(() => {
     let unsubscribe: () => void;
@@ -28,8 +29,9 @@ export const SpeedMeters: React.FC = () => {
 
         unsubscribe = onValue(sensorRef, (snapshot) => {
           const data = snapshot.val();
-          setKilowatts(data?.mainVoltage ?? 0);
+          setKilowatts(data?.KW ?? 0);
           setBatteryLife(data?.batteryVoltage ?? 0);
+          setrpm(data?.RPM ?? 0);
           setIsLoading(false);
           setFirebaseError(null);
         });
@@ -100,68 +102,68 @@ export const SpeedMeters: React.FC = () => {
 
       <div className="flex flex-col md:flex-row flex-wrap gap-0 p-0">
         {/* Kilowatts Meter */}
-         <div className="w-full md:flex-1 bg-gray-100 rounded-xl shadow-md p-4 flex flex-col items-center justify-center mt-4 md:mt-0">
+        <div className="w-full md:flex-1 bg-gray-100 rounded-xl shadow-md p-4 flex flex-col items-center justify-center mt-4 md:mt-0">
           <span className="text-sm text-gray-600 mb-2"> Kilowatts </span>
-        <div className="w-full max-w-md relative">
-          {/* Bar container */}
-          <div className="w-full h-5 rounded-lg overflow-hidden bg-gray-300 relative">
-            {/* Base fill */}
-            <div
-              className="h-full transition-all duration-500"
-              style={{
-                width: `${(kilowatts / realMaxKilowatts) * 100}%`,
-                backgroundColor: kilowatts < 250 ? "#0000009d" : "#ff3c0085",
-              }}
-            />
+          <div className="w-full max-w-md relative">
+            {/* Bar container */}
+            <div className="w-full h-5 rounded-lg overflow-hidden bg-gray-300 relative">
+              {/* Base fill */}
+              <div
+                className="h-full transition-all duration-500"
+                style={{
+                  width: `${(kilowatts / realMaxKilowatts) * 100}%`,
+                  backgroundColor:
+                    kilowatts < upperlimit.value ? "#0000009d" : "#ff3c0085",
+                }}
+              />
 
-            {/* Red margin at upper threshold (static) */}
-            <div
-              className="absolute top-0 bottom-0"
-              style={{
-                left: `${(250 / realMaxKilowatts) * 100}%`,
-                width: "4px",
-                backgroundColor: "#f30018ff",
-              }}
-            />
-          </div>
+              {/* Red margin at upper threshold (static) */}
+              <div
+                className="absolute top-0 bottom-0"
+                style={{
+                  left: `${(upperlimit.value / realMaxKilowatts) * 100}%`,
+                  width: "4px",
+                  backgroundColor: "#f30018ff",
+                }}
+              />
+            </div>
 
-          {/* Legend */}
-          <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
-            <span>0</span>
-            <span>{(realMaxKilowatts * 1) / 4}</span>
-            <span>{realMaxKilowatts / 2}</span>
-            <span>{(realMaxKilowatts * 3) / 4}</span>
-            <span>{realMaxKilowatts} kW</span>
-          </div>
+            {/* Legend */}
+            <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
+              <span>0</span>
+              <span>{(realMaxKilowatts * 1) / 4}</span>
+              <span>{realMaxKilowatts / 2}</span>
+              <span>{(realMaxKilowatts * 3) / 4}</span>
+              <span>{realMaxKilowatts} kW</span>
+            </div>
 
-          <div className="text-center mt-2 font-mono text-sm">
-            {kilowatts.toFixed(2)} kW
+            <div className="text-center mt-2 font-mono text-sm">
+              {kilowatts.toFixed(2)} kW
+            </div>
           </div>
-        </div>
         </div>
 
         {/* RPM Meter */}
         <div className="w-full md:flex-1 bg-gray-100 rounded-xl shadow-md p-4 flex flex-col items-center justify-center mt-4 md:mt-0">
-        <span className="text-sm text-gray-600 mb-2">RPM</span>
-        <div className="w-full max-w-md">
-          {/* Simple single-color bar */}
-          <div
-            className="w-full h-5 rounded-lg overflow-hidden bg-gray-300"
-            style={{ position: "relative" }}
-          >
+          <span className="text-sm text-gray-600 mb-2">RPM</span>
+          <div className="w-full max-w-md">
+            {/* Simple single-color bar */}
             <div
-              className="h-full bg-gray-500 transition-all duration-500 rounded-lg"
-              style={{ width: `${(rpm / 1000) * 100}%` }}
-            />
+              className="w-full h-5 rounded-lg overflow-hidden bg-gray-300"
+              style={{ position: "relative" }}
+            >
+              <div
+                className="h-full bg-gray-500 transition-all duration-500 rounded-lg"
+                style={{ width: `${(rpm / realMaxRPM) * 100}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
+              <span>0</span>
+              <span>{realMaxRPM} RPM</span>
+            </div>
+            <div className="text-center mt-2 font-mono text-sm">{rpm} RPM</div>
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
-            <span>0</span>
-            <span>{realMaxRPM} RPM</span>
-          </div>
-          <div className="text-center mt-2 font-mono text-sm">{rpm} RPM</div>
         </div>
-      </div>
-
       </div>
 
       {/* Battery Button */}
@@ -172,13 +174,12 @@ export const SpeedMeters: React.FC = () => {
       </div>
 
       <button
-  onClick={() => setShowBattery(!showBattery)}
-  className="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
->
-  <Battery className="w-4 h-4" />
-  <span>{batteryLife.toFixed(1)} V</span>
-</button>
-
+        onClick={() => setShowBattery(!showBattery)}
+        className="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+      >
+        <Battery className="w-4 h-4" />
+        <span>{batteryLife.toFixed(1)} V</span>
+      </button>
 
       {/* Battery Popup */}
       {showBattery && (
@@ -194,7 +195,7 @@ export const SpeedMeters: React.FC = () => {
               ×
             </button>
           </div>
-          
+
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Voltage:</span>

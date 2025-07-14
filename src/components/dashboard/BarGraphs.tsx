@@ -8,10 +8,120 @@ import {
   Cell,
   LabelList,
 } from "recharts";
-
+import {
+  getDatabaseInstance,
+  isFirebaseInitialized,
+} from "../firebase/firebase";
+import { ref, onValue } from "firebase/database";
 import { BarChart2Icon } from 'lucide-react';
+import { useEffect, useState } from "react";
+
 
 const BarGraphs = () => {
+  // const [phphv, set] = useState(0);
+  // const [phphv, set] = useState(0);
+  // const [phphv, set] = useState(0);
+
+  // const [phphv, set] = useState(0);
+  // const [phphv, set] = useState(0);
+  // const [phphv, set] = useState(0);
+
+  const [g_current_l1, set_g_current_l1] = useState(0);
+  const [g_current_l2, set_g_current_l2] = useState(0);
+  const [g_current_l3, set_g_current_l3] = useState(0);
+
+  const [g_ph_n_v_l1, set_g_ph_n_v_l1] = useState(0);
+  const [g_ph_n_v_l2, set_g_ph_n_v_l2] = useState(0);
+  const [g_ph_n_v_l3, set_g_ph_n_v_l3] = useState(0);
+  
+  const [g_ph_phv_l1, set_g_ph_phv_l1] = useState(0);
+  const [g_ph_phv_l2, set_g_ph_phv_l2] = useState(0);
+  const [g_ph_phv_l3, set_g_ph_phv_l3] = useState(0);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [firebaseError, setFirebaseError] = useState<string | null>(null);
+  
+    useEffect(() => {
+      let unsubscribe: () => void;
+      let initializationCheck: NodeJS.Timeout;
+  
+      const setupFirebaseListener = () => {
+        try {
+          const db = getDatabaseInstance();
+          const sensorRef = ref(db, "Sensor");
+  
+          unsubscribe = onValue(sensorRef, (snapshot) => {
+            const data = snapshot.val();
+
+            set_g_current_l1(data?.mainL1_NVoltage ?? 0);
+            set_g_current_l2(data?.mainL2_NVoltage ?? 0);
+            set_g_current_l3(data?.mainL3_NVoltage ?? 0);
+
+            set_g_ph_n_v_l1(data?.genL1_NVoltage ?? 0);
+            set_g_ph_n_v_l2(data?.genL2_NVoltage ?? 0);
+            set_g_ph_n_v_l3(data?.genL3_NVoltage ?? 0);
+
+            set_g_ph_phv_l1(data?.genL1_NCurrent ?? 0);
+            set_g_ph_phv_l2(data?.genL2_NCurrent ?? 0);
+            set_g_ph_phv_l3(data?.genL3_NCurrent ?? 0);
+            // setBatteryLife(data?.batteryVoltage ?? 0);
+            setIsLoading(false);
+            setFirebaseError(null);
+          });
+        } catch (error) {
+          console.error("Firebase connection error:", error);
+          setFirebaseError("Failed to connect to data source");
+          setIsLoading(false);
+        }
+      };
+  
+      if (isFirebaseInitialized()) {
+        setupFirebaseListener();
+      } else {
+        initializationCheck = setInterval(() => {
+          if (isFirebaseInitialized()) {
+            clearInterval(initializationCheck);
+            setupFirebaseListener();
+          }
+        }, 500);
+      }
+  
+      return () => {
+        if (unsubscribe) unsubscribe();
+        if (initializationCheck) clearInterval(initializationCheck);
+      };
+    }, []);
+    if (isLoading) {
+      return (
+        <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-gray-900">
+              System Data
+            </h3>
+          </div>
+          <p className="text-gray-600">Loading data...</p>
+        </div>
+      );
+    }
+  
+    if (firebaseError) {
+      return (
+        <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-gray-900">
+             System Data
+            </h3>
+          </div>
+          <p className="text-red-500">{firebaseError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+          >
+           System Data
+          </button>
+        </div>
+      );
+    }
   const data_1 = [
     { name: "L1-N", value: 85 },
     { name: "L2-N", value: 50 },
@@ -21,7 +131,7 @@ const BarGraphs = () => {
   const upperLimit_1 = 84;
   const lowerLimit_1 = 25;
 
-  const YAxislist_1 = [0, 150];
+  const YAxislist_1 = [0, 320];
 
   const data_2 = [
     { name: "L1-N", value: 85 },
@@ -32,38 +142,38 @@ const BarGraphs = () => {
   const upperLimit_2 = 84;
   const lowerLimit_2 = 25;
 
-  const YAxislist_2 = [0, 400];
+  const YAxislist_2 = [0, 500];
 
   const data_3 = [
-    { name: "L1-N", value: 85 },
-    { name: "L2-N", value: 92 },
-    { name: "L3-N", value: 10 },
+    { name: "L1-N", value: Math.floor(g_current_l1 )},
+    { name: "L2-N", value: Math.floor( g_current_l2 )},
+    { name: "L3-N", value:  Math.floor(g_current_l3) },
   ];
 
   const upperLimit_3 = 84;
   const lowerLimit_3 = 25;
 
-  const YAxislist_3 = [0, 100];
+  const YAxislist_3 = [0, 320];
 
   const data_4 = [
-    { name: "L1-N", value: 85 },
-    { name: "L2-N", value: 50},
-    { name: "L3-N", value: 10 },
+    { name: "L1-N", value: Math.floor(g_ph_n_v_l1 )},
+    { name: "L2-N", value: Math.floor(g_ph_n_v_l2)},
+    { name: "L3-N", value: Math.floor(g_ph_n_v_l3 )},
   ];
 
-  const upperLimit_4 = 84;
-  const lowerLimit_4 = 25;
+  const upperLimit_4 = 230;
+  const lowerLimit_4 = 200;
 
-  const YAxislist_4 = [0, 100];
+  const YAxislist_4 = [0, 320];
 
-  const data_5 = [
-    { name: "L1-N", value: 85 },
-    { name: "L2-N", value: 75 },
-    { name: "L3-N", value: 10 },
-  ];
+const data_5 = [
+  { name: "L1-N", value: Math.floor(g_ph_phv_l1) },
+  { name: "L2-N", value: Math.floor(g_ph_phv_l2) },
+  { name: "L3-N", value: Math.floor(g_ph_phv_l3) },
+];
 
-  const upperLimit_5 = 84;
-  const lowerLimit_5 = 25;
+  const upperLimit_5 = 60;
+  const lowerLimit_5 = 50;
 
   const YAxislist_5 = [0, 100];
 
