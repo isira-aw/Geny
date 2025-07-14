@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Battery, Gauge } from "lucide-react";
+import { Battery } from "lucide-react";
 import { ref, onValue } from "firebase/database";
 import {
   getDatabaseInstance,
   isFirebaseInitialized,
 } from "../firebase/firebase";
+import { Gauge } from "@mui/x-charts/Gauge";
+import Stack from "@mui/material/Stack";
 
 export const SpeedMeters: React.FC = () => {
   const [kilowatts, setKilowatts] = useState(0);
@@ -16,7 +18,7 @@ export const SpeedMeters: React.FC = () => {
 
   const realMaxRPM = 2000;
   const realMaxKilowatts = 1000;
-  const upperlimit = { value: 800 };
+  const upperlimit = { value: 100 };
 
   useEffect(() => {
     let unsubscribe: () => void;
@@ -66,7 +68,6 @@ export const SpeedMeters: React.FC = () => {
           <h3 className="text-lg font-bold text-gray-900">
             Performance Meters
           </h3>
-          <Gauge className="w-10 h-10 text-blue-600 animate-pulse" />
         </div>
         <p className="text-gray-600">Loading data...</p>
       </div>
@@ -80,7 +81,6 @@ export const SpeedMeters: React.FC = () => {
           <h3 className="text-lg font-bold text-gray-900">
             Performance Meters
           </h3>
-          <Gauge className="w-10 h-10 text-red-600" />
         </div>
         <p className="text-red-500">{firebaseError}</p>
         <button
@@ -97,47 +97,56 @@ export const SpeedMeters: React.FC = () => {
     <div className="bg-white rounded-2xl p-2 shadow-lg">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-bold text-gray-900">Performance Meters</h3>
-        <Gauge className="w-10 h-10 text-blue-600" />
       </div>
 
       <div className="flex flex-col md:flex-row flex-wrap gap-0 p-0">
         {/* Kilowatts Meter */}
         <div className="w-full md:flex-1 bg-gray-100 rounded-xl shadow-md p-4 flex flex-col items-center justify-center mt-4 md:mt-0">
           <span className="text-sm text-gray-600 mb-2"> Kilowatts </span>
-          <div className="w-full max-w-md relative">
-            {/* Bar container */}
-            <div className="w-full h-5 rounded-lg overflow-hidden bg-gray-300 relative">
-              {/* Base fill */}
-              <div
-                className="h-full transition-all duration-500"
-                style={{
-                  width: `${(kilowatts / realMaxKilowatts) * 100}%`,
-                  backgroundColor:
-                    kilowatts < upperlimit.value ? "#0000009d" : "#ff3c0085",
-                }}
-              />
+          <div className="w-full max-w-md relative flex flex-col items-center justify-center">
+            {(() => {
+              const isDanger = kilowatts > upperlimit.value;
+              return (
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Gauge
+                    width={260}
+                    height={140}
+                    value={kilowatts}
+                    valueMax={realMaxKilowatts}
+                    startAngle={-90}
+                    endAngle={90}
+                    sx={{
+                      "& .MuiGauge-valueArc": {
+                        fill: isDanger ? "#ff3c00" : "#0000006e",
+                      },
+                      "& .MuiGauge-referenceArc": {
+                        fill: "#00000057",
+                      },
+                      "& .MuiGauge-valueText": {
+                        display: "none",
+                      },
+                    }}
+                  />
+                </Stack>
+              );
+            })()}
+            <div className="flex items-center gap-4 justify-center mb-2">
+              {/* Normal Range */}
+              <div className="flex items-center gap-1 text-xs text-gray-600">
+                <div
+                  className="w-3 h-3 rounded-sm"
+                  style={{ backgroundColor: "#0000008a" }}
+                ></div>
+                <span>Normal Range</span>
+              </div>
 
-              {/* Red margin at upper threshold (static) */}
-              <div
-                className="absolute top-0 bottom-0"
-                style={{
-                  left: `${(upperlimit.value / realMaxKilowatts) * 100}%`,
-                  width: "4px",
-                  backgroundColor: "#f30018ff",
-                }}
-              />
+              {/* High Range */}
+              <div className="flex items-center gap-1 text-xs text-red-600">
+                <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                <span>High Range</span>
+              </div>
             </div>
-
-            {/* Legend */}
-            <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
-              <span>0</span>
-              <span>{(realMaxKilowatts * 1) / 4}</span>
-              <span>{realMaxKilowatts / 2}</span>
-              <span>{(realMaxKilowatts * 3) / 4}</span>
-              <span>{realMaxKilowatts} kW</span>
-            </div>
-
-            <div className="text-center mt-2 font-mono text-sm">
+            <div className="text-center mt-3 font-mono font-semibold text-lg text-gray-800  select-none">
               {kilowatts.toFixed(2)} kW
             </div>
           </div>
@@ -146,9 +155,8 @@ export const SpeedMeters: React.FC = () => {
         {/* RPM Meter */}
         <div className="w-full md:flex-1 bg-gray-100 rounded-xl shadow-md p-4 flex flex-col items-center justify-center mt-4 md:mt-0">
           <span className="text-sm text-gray-600 mb-2">RPM</span>
-          <div className="w-full max-w-md">
-            {/* Simple single-color bar */}
-            <div
+          <div className="w-full max-w-md flex flex-col items-center justify-center">
+            {/* <div
               className="w-full h-5 rounded-lg overflow-hidden bg-gray-300"
               style={{ position: "relative" }}
             >
@@ -156,12 +164,36 @@ export const SpeedMeters: React.FC = () => {
                 className="h-full bg-gray-500 transition-all duration-500 rounded-lg"
                 style={{ width: `${(rpm / realMaxRPM) * 100}%` }}
               />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
+            </div> */}
+            {/* <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
               <span>0</span>
               <span>{realMaxRPM} RPM</span>
+            </div> */}
+
+            <Gauge
+              width={260}
+              height={140}
+              value={rpm}
+              valueMax={realMaxRPM}
+              startAngle={-90}
+              endAngle={90}
+              sx={{
+                "& .MuiGauge-valueArc": {
+                  fill: "#25252562", // gray-600, adjust color as needed
+                  transition: "width 0.5s ease",
+                },
+                "& .MuiGauge-referenceArc": {
+                  fill: "#D1D5DB", // gray-300 background arc
+                },
+                "& .MuiGauge-valueText": {
+                  display: "none", // hide numeric text if needed
+                },
+              }}
+            />
+
+            <div className="text-center mt-3 font-mono font-semibold text-lg text-gray-800  select-none">
+              {rpm} RPM
             </div>
-            <div className="text-center mt-2 font-mono text-sm">{rpm} RPM</div>
           </div>
         </div>
       </div>

@@ -14,6 +14,10 @@ import { AlarmSystem } from "./dashboard/AlarmSystem";
 import { SpeedMeters } from "./dashboard/SpeedMeters";
 import { DataTables } from "./dashboard/DataTables";
 import NotificationDrawer from "./Notification";
+import { SettingsPage } from "./SettingsPage"; // adjust path as needed
+// import { Button } from "@mui/material"; // import Button from MUI
+import IconButton from "@mui/material/IconButton";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 interface DashboardProps {
   onLogout: () => void;
@@ -22,6 +26,7 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
@@ -78,11 +83,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
                 <LogOut className="w-4 h-4" />
                 <span>Logout</span>
               </button>
+              {showSettings && (
+                <SettingsPage onClose={() => setShowSettings(false)} />
+              )}
+              <IconButton
+                onClick={() => setShowSettings(true)}
+                aria-label="open settings"
+              >
+                <SettingsIcon />
+              </IconButton>
+
               <div
                 style={{
                   display: "flex",
                   justifyContent: "flex-end",
-                  padding: "10px",
+                  padding: "2px",
                 }}
               >
                 <NotificationDrawer />
