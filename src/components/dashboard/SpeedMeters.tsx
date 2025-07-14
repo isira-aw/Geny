@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Battery, Gauge } from "lucide-react";
 import { ref, onValue } from "firebase/database";
-import ReactSpeedometer from "react-d3-speedometer";
 import {
   getDatabaseInstance,
   isFirebaseInitialized,
 } from "../firebase/firebase";
 
-const realMaxKilowatts = 300;
-const gaugeMax = 180;
-const rpm = 1000;
+const realMaxKilowatts = 500;
+const realMaxRPM = 1000;
+const rpm = 500;
 
 export const SpeedMeters: React.FC = () => {
   const [kilowatts, setKilowatts] = useState(0);
@@ -100,71 +99,86 @@ export const SpeedMeters: React.FC = () => {
       </div>
 
       <div className="flex flex-col md:flex-row flex-wrap gap-0 p-0">
-  {/* Kilowatts Meter */}
-  <div className="w-full md:flex-1 aspect-square bg-gray-100 rounded-xl shadow-md flex items-center justify-center ">
-    <div className="text-center">
-      <div className="relative w-48 h-48 mx-auto mb-4"> {/* Slightly larger */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-sm text-gray-600">Kilowatts</span>
-          <ReactSpeedometer
-            maxValue={200}
-            value={Math.min(
-              Math.max((kilowatts / realMaxKilowatts) * gaugeMax, 0.01),
-              gaugeMax - 0.01
-            )}
-            currentValueText={`KiloWatts: ${kilowatts.toFixed(2)}`}
-            customSegmentStops={[0, 45, 200]}
-            segmentColors={[
-              "#70da14ff",
-              "#fbff25ff",
-              "#ff7e57ff",
-              "#f30018ff",
-            ]}
-            textColor="black"
-          />
+        {/* Kilowatts Meter */}
+         <div className="w-full md:flex-1 bg-gray-100 rounded-xl shadow-md p-4 flex flex-col items-center justify-center mt-4 md:mt-0">
+          <span className="text-sm text-gray-600 mb-2"> Kilowatts </span>
+        <div className="w-full max-w-md relative">
+          {/* Bar container */}
+          <div className="w-full h-5 rounded-lg overflow-hidden bg-gray-300 relative">
+            {/* Base fill */}
+            <div
+              className="h-full transition-all duration-500"
+              style={{
+                width: `${(kilowatts / realMaxKilowatts) * 100}%`,
+                backgroundColor: kilowatts < 250 ? "#0000009d" : "#ff3c0085",
+              }}
+            />
+
+            {/* Red margin at upper threshold (static) */}
+            <div
+              className="absolute top-0 bottom-0"
+              style={{
+                left: `${(250 / realMaxKilowatts) * 100}%`,
+                width: "4px",
+                backgroundColor: "#f30018ff",
+              }}
+            />
+          </div>
+
+          {/* Legend */}
+          <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
+            <span>0</span>
+            <span>{(realMaxKilowatts * 1) / 4}</span>
+            <span>{realMaxKilowatts / 2}</span>
+            <span>{(realMaxKilowatts * 3) / 4}</span>
+            <span>{realMaxKilowatts} kW</span>
+          </div>
+
+          <div className="text-center mt-2 font-mono text-sm">
+            {kilowatts.toFixed(2)} kW
+          </div>
+        </div>
+        </div>
+
+        {/* RPM Meter */}
+        <div className="w-full md:flex-1 bg-gray-100 rounded-xl shadow-md p-4 flex flex-col items-center justify-center mt-4 md:mt-0">
+        <span className="text-sm text-gray-600 mb-2">RPM</span>
+        <div className="w-full max-w-md">
+          {/* Simple single-color bar */}
+          <div
+            className="w-full h-5 rounded-lg overflow-hidden bg-gray-300"
+            style={{ position: "relative" }}
+          >
+            <div
+              className="h-full bg-gray-500 transition-all duration-500 rounded-lg"
+              style={{ width: `${(rpm / 1000) * 100}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
+            <span>0</span>
+            <span>{realMaxRPM} RPM</span>
+          </div>
+          <div className="text-center mt-2 font-mono text-sm">{rpm} RPM</div>
         </div>
       </div>
-    </div>
-  </div>
 
-  {/* RPM Meter */}
-  <div className="w-full md:flex-1 aspect-square bg-gray-100 rounded-xl shadow-md flex items-center justify-center">
-    <div className="text-center">
-      <div className="relative w-20 h-20 mx-auto mb-0">
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-sm text-gray-600">RPM</span>
-          <ReactSpeedometer
-            maxValue={1000}
-            value={Math.min(Math.max(rpm, 0.01), gaugeMax - 0.01)}
-            customSegmentStops={[0, 1000]}
-            segmentColors={[
-              "#70da14ff",
-              "#fbff25ff",
-              "#ff7e57ff",
-              "#f30018ff",
-            ]}
-            currentValueText={`RPM: ${rpm}`}
-            textColor="black"
-          />
-        </div>
       </div>
-    </div>
-  </div>
-</div>
-
 
       {/* Battery Button */}
-      
-      <div><div className="text-sm text-gray-600">Engine Speed</div>
-            <div className="text-xs text-gray-500 mt-1">PF: 1 R</div></div>
-            
+
+      <div className="flex justify-between m-3 p-2 text-gray-500 ">
+        <div className="text-sm text-gray-600">Engine Speed</div>
+        <div className="text-xs text-gray-500 ">PF: 1 R</div>
+      </div>
+
       <button
-        onClick={() => setShowBattery(!showBattery)}
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2"
-      >
-        <Battery className="w-4 h-4" />
-        <span>{batteryLife.toFixed(1)} V</span>
-      </button>
+  onClick={() => setShowBattery(!showBattery)}
+  className="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+>
+  <Battery className="w-4 h-4" />
+  <span>{batteryLife.toFixed(1)} V</span>
+</button>
+
 
       {/* Battery Popup */}
       {showBattery && (
@@ -180,6 +194,7 @@ export const SpeedMeters: React.FC = () => {
               ×
             </button>
           </div>
+          
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Voltage:</span>
