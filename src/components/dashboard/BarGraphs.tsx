@@ -201,7 +201,7 @@ const BarGraphs = () => {
   };
 
   return (
-    <div className="rounded-2xl shadow-lg p-2 bg-white text-sm text-gray-700 mb-1">
+    <div className="rounded-2xl shadow-lg p-2 bg-white text-sm text-gray-700 mb-1 mt-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 w-full max-w-md mx-auto">
         {/* Column 1: Electric */}
         <div className="bg-gray-200 rounded-lg shadow p-2 flex items-center justify-center text-center w-full gap-2" >
@@ -309,8 +309,8 @@ const BarGraphs = () => {
         </div>
 
         {/* Bar Graph Card 4 */}
-        <div className="p-2 rounded shadow bg-white">
-          <h2 className="text-base font-semibold mb-2 text-center">
+<div className="p-2 rounded shadow bg-white" style={{ height: "200px" }}>
+  <h2 className="text-base font-semibold mb-2 text-center">
             Generator Ph-N[N]
           </h2>
           <ResponsiveContainer width="100%" height={200} className="-ml-4">

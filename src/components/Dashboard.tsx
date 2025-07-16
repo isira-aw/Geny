@@ -41,7 +41,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
     <div className="min-h-screen bg-gray-100 ">
       {/* Navigation Bar */}
       <nav className="bg-white shadow-lg border-b">
-        <div className="max-w-7xl mx-auto px-4">
+         <div className=" mx-auto px-4"> {/* max-w-7xl */}
           <div className="flex justify-between items-center h-16">
             {/* Left side: Logo + Desktop Tabs */}
             <div className="flex items-center space-x-4">
@@ -145,21 +145,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
       </nav>
 
       {activeTab === "dashboard" && (
-        <div className="mx-auto p-6 ">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-2">
+        <div className="mx-auto p-2 gap-2 ">
+          <GeneratorControl />
+            <BarGraphs />         
+          {/* <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-2"> */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
             {/* LEFT COLUMN (narrower) */}
+            
             <div className="flex flex-col gap-2">
-              <GeneratorControl />
 
               <DataTables />
             </div>
 
             {/* RIGHT COLUMN (wider) */}
             <div className="flex flex-col gap-2">
-              <BarGraphs />
-
               <SpeedMeters />
 
+            </div>
+            <div className="flex flex-col gap-2">
               <AlarmSystem />
             </div>
           </div>
