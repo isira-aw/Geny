@@ -22,10 +22,9 @@ export const AlarmSystem: React.FC = () => {
   }, []);
 
   return (
-    <div className="rounded-2xl shadow-lg p-4 bg-white text-sm">
+    <div className="rounded-2xl shadow-lg p-4 bg-gray-100 text-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <AlertTriangle className="w-6 h-6 text-yellow-400" />
           <h3 className="text-lg font-bold">ALARM LIST</h3>
         </div>
         <div className="flex items-center space-x-2">
@@ -45,7 +44,7 @@ export const AlarmSystem: React.FC = () => {
 
       <div className="rounded-lg p-4 h-48 overflow-y-auto">
         {alarms.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-800">
+          <div className="flex items-center justify-center h-full text-gray-900">
             <span>no alarm</span>
           </div>
         ) : (
@@ -56,7 +55,7 @@ export const AlarmSystem: React.FC = () => {
                 className={`p-2 rounded text-sm transition-all duration-300 ${
                   index === 0 
                     ? 'bg-yellow-800 border border-yellow-600 text-yellow-200' 
-                    : 'bg-gray-500 text-gray-300'
+                    : 'bg-gray-100 text-gray-800'
                 }`}
               >
                 {alarm}

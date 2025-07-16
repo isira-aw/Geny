@@ -53,11 +53,9 @@ export const DataTables: React.FC = () => {
   }, []);
   if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+      <div className="bg-gray-100 rounded-2xl p-6 shadow-lg text-center">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-900">
-            System Data
-          </h3>
+          <h3 className="text-lg font-bold text-gray-900">System Data</h3>
         </div>
         <p className="text-gray-600">Loading data...</p>
       </div>
@@ -66,25 +64,23 @@ export const DataTables: React.FC = () => {
 
   if (firebaseError) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
+      <div className="bg-gray-100 rounded-2xl p-6 shadow-lg text-center">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-900">
-           System Data
-          </h3>
+          <h3 className="text-lg font-bold text-gray-900">System Data</h3>
         </div>
         <p className="text-red-500">{firebaseError}</p>
         <button
           onClick={() => window.location.reload()}
           className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
-         System Data
+          System Data
         </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-lg">
+    <div className="bg-gray-100 rounded-2xl p-6 shadow-lg">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-900">System Data</h3>
         <Database className="w-6 h-6 text-blue-600" />

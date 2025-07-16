@@ -19,11 +19,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [devices, setDevices] = useState<Device[]>([
-    { id: "1", name: "Osanda2", uid: "0000", lastLogin: "2024-01-15 14:30" },
+    { id: "1", name: "dev", uid: "0000", lastLogin: "2024-01-15 14:30" },
     {
       id: "2",
-      name: "Osanada1",
-      uid: "00000000",
+      name: "Osanda",
+      uid: "ID987654321",
       lastLogin: "2024-01-14 09:15",
     },
   ]);
@@ -115,12 +115,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#98A1BC] via-[#DED3C4] to-[#F4EBD3] flex items-center justify-center p-4">
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Login Form */}
-        <div className="lg:col-span-1 bg-white rounded-2xl shadow-2xl p-8">
+        <div className="lg:col-span-1 rounded-2xl shadow-2xl p-8 bg-gradient-to-br from-[#F4EBD3] via-[#DED3C4] to-[#98A1BC]">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-[#555879] rounded-full flex items-center justify-center mx-auto mb-4">
               <Power className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Device Login</h1>
@@ -167,7 +167,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
+              className="w-full bg-[#555879] hover:bg-[#444c5c] text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
             >
               {loading ? "Signing In..." : "Sign In"}
             </button>
@@ -176,14 +176,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
         {/* Device List */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl shadow-2xl p-6">
+          <div className="rounded-2xl shadow-2xl p-6 bg-gradient-to-br from-[#F4EBD3] via-[#98A1BC] to-[#DED3C4]">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">
                 Recent Devices
               </h2>
               <button
                 onClick={() => setShowAddDevice(true)}
-                className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
+                className="bg-[#555879] hover:bg-[#444c5c] text-white p-2 rounded-lg transition-colors"
               >
                 <Plus className="w-5 h-5" />
               </button>
@@ -232,7 +232,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
           {/* Add Device Form */}
           {showAddDevice && (
-            <div className="bg-white rounded-2xl shadow-2xl p-6">
+            <div className="bg-gradient-to-br from-[#98A1BC] via-[#DED3C4] to-[#F4EBD3] rounded-2xl shadow-2xl p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">
                 Add New Device
               </h3>
@@ -255,7 +255,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <div className="flex space-x-3 mt-4">
                 <button
                   onClick={handleAddDevice}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                  className="bg-[#555879] hover:bg-[#444c5c] text-white px-4 py-2 rounded-lg"
                 >
                   Add Device
                 </button>

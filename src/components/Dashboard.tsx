@@ -38,14 +38,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
   return (
-    <div className="min-h-screen bg-gray-100 ">
+    <div className="min-h-screen bg-gradient-to-br from-[#98A1BC] via-[#DED3C4] to-[#F4EBD3]  ">
       {/* Navigation Bar */}
-      <nav className="bg-white shadow-lg border-b">
+      <nav className="bg-gradient-to-br from-[#98A1BC] via-[#DED3C4] to-[#F4EBD3]  shadow-lg border-b">
          <div className=" mx-auto px-4"> {/* max-w-7xl */}
           <div className="flex justify-between items-center h-16">
             {/* Left side: Logo + Desktop Tabs */}
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Device Monitor
               </h1>
 
