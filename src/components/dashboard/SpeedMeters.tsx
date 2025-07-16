@@ -16,9 +16,13 @@ export const SpeedMeters: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseError, setFirebaseError] = useState<string | null>(null);
 
-  const realMaxRPM = 2000;
   const realMaxKilowatts = 1000;
   const upperlimit = { value: 100 };
+
+
+  const realMaxRPM = 2000;
+  const upperlimit_RPM = { value: 1600 };
+  const lowerlimit_RPM = { value: 1200 };
 
   useEffect(() => {
     let unsubscribe: () => void;
@@ -94,7 +98,7 @@ export const SpeedMeters: React.FC = () => {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-2 shadow-lg">
+    <div className="bg-gray-100 rounded-2xl p-2 shadow-lg">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-bold text-gray-900">Performance Meters</h3>
       </div>
@@ -117,10 +121,10 @@ export const SpeedMeters: React.FC = () => {
                     endAngle={90}
                     sx={{
                       "& .MuiGauge-valueArc": {
-                        fill: isDanger ? "#ff3c00" : "#0000006e",
+                        fill: isDanger ? "#911b00be" : "#00aa0eb6",
                       },
                       "& .MuiGauge-referenceArc": {
-                        fill: "#00000057",
+                        fill: "#d0d1d4ff",
                       },
                       "& .MuiGauge-valueText": {
                         display: "none",
@@ -156,61 +160,73 @@ export const SpeedMeters: React.FC = () => {
         <div className="w-full md:flex-1 bg-gray-100 rounded-xl shadow-md p-4 flex flex-col items-center justify-center mt-4 md:mt-0">
           <span className="text-sm text-gray-600 mb-2">RPM</span>
           <div className="w-full max-w-md flex flex-col items-center justify-center">
-            {/* <div
-              className="w-full h-5 rounded-lg overflow-hidden bg-gray-300"
-              style={{ position: "relative" }}
-            >
-              <div
-                className="h-full bg-gray-500 transition-all duration-500 rounded-lg"
-                style={{ width: `${(rpm / realMaxRPM) * 100}%` }}
-              />
-            </div> */}
-            {/* <div className="flex justify-between text-xs text-gray-500 mt-1 select-none max-w-md mx-auto">
-              <span>0</span>
-              <span>{realMaxRPM} RPM</span>
-            </div> */}
+            {(() => {
+              // Dynamically determine RPM color
+              let fillColor = "#3c67bdb4"; // Default: Low (gray)
+              if (rpm >= lowerlimit_RPM.value && rpm <= upperlimit_RPM.value) {
+                fillColor = "#00aa0eb6"; // Normal (green)
+              } else if (rpm > upperlimit_RPM.value) {
+                fillColor = "#911b00be"; // High (red)
+              }
 
-            <Gauge
-              width={260}
-              height={140}
-              value={rpm}
-              valueMax={realMaxRPM}
-              startAngle={-90}
-              endAngle={90}
-              sx={{
-                "& .MuiGauge-valueArc": {
-                  fill: "#25252562", // gray-600, adjust color as needed
-                  transition: "width 0.5s ease",
-                },
-                "& .MuiGauge-referenceArc": {
-                  fill: "#D1D5DB", // gray-300 background arc
-                },
-                "& .MuiGauge-valueText": {
-                  display: "none", // hide numeric text if needed
-                },
-              }}
-            />
+              return (
+                <>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Gauge
+                      width={260}
+                      height={140}
+                      value={rpm}
+                      valueMax={realMaxRPM}
+                      startAngle={-90}
+                      endAngle={90}
+                      sx={{
+                        "& .MuiGauge-valueArc": {
+                          fill: fillColor,
+                        },
+                        "& .MuiGauge-referenceArc": {
+                          fill: "#d0d1d4ff",
+                        },
+                        "& .MuiGauge-valueText": {
+                          display: "none",
+                        },
+                      }}
+                    />
+                  </Stack>
 
-            <div className="text-center mt-3 font-mono font-semibold text-lg text-gray-800  select-none">
-              {rpm} RPM
-            </div>
+                  {/* Legend */}
+                  <div className="flex items-center gap-4 justify-center mb-2 mt-2">
+                    <div className="flex items-center gap-1 text-xs text-gray-600">
+                      <div className="w-3 h-3 rounded-sm bg-gray-500"></div>
+                      <span>Low Range</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-green-600">
+                      <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                      <span>Normal Range</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-red-600">
+                      <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                      <span>High Range</span>
+                    </div>
+                  </div>
+
+                  <div className="text-center mt-3 font-mono font-semibold text-lg text-gray-800 select-none">
+                    {rpm.toFixed(0)} RPM
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>
 
       {/* Battery Button */}
 
-      <div className="flex justify-between m-3 p-2 text-gray-500 ">
-        <div className="text-sm text-gray-600">Engine Speed</div>
-        <div className="text-xs text-gray-500 ">PF: 1 R</div>
-      </div>
-
       <button
         onClick={() => setShowBattery(!showBattery)}
-        className="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+        className= " w-full flex items-center justify-center space-x-2 bg-[#555879] hover:bg-[#444c5c] px-4 py-2 rounded-lg transition-colors w-[150px] mt-4 mx-auto text-white font-semibold shadow-md"
       >
-        <Battery className="w-4 h-4" />
-        <span>{batteryLife.toFixed(1)} V</span>
+        <Battery className="w-6 h-6 text-white  " />
+        <span className="text-white ">{batteryLife.toFixed(1)} V</span>
       </button>
 
       {/* Battery Popup */}

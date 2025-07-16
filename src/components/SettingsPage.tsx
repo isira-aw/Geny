@@ -84,8 +84,8 @@ export const SettingsPage: React.FC<{ onClose: () => void }> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-50 overflow-auto">
-      <div className="flex justify-between bg-gray-200 p-4 items-center">
+    <div className="fixed inset-0 z-50 overflow-auto bg-gradient-to-br from-[#98A1BC] via-[#DED3C4] to-[#F4EBD3]  ">
+      <div className="flex justify-between p-4 items-center">
         <Typography variant="h6" className="font-bold">
           Settings Configuration
         </Typography>
@@ -211,9 +211,13 @@ export const SettingsPage: React.FC<{ onClose: () => void }> = ({
       <div className="p-6 border-t flex justify-end">
         <Button
           variant="contained"
-          color="primary"
           onClick={handleSubmit}
           disabled={submitting}
+          sx={{
+            backgroundColor: "black",
+            color: "white",
+            "&:hover": { backgroundColor: "#333" },
+          }}
         >
           {submitting ? "Submitting..." : "Submit"}
         </Button>
