@@ -8,6 +8,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { updateUISettings } from "./firebase/UIsettingsData";
 
 export const SettingsPage: React.FC<{ onClose: () => void }> = ({
   onClose,
@@ -37,6 +38,8 @@ export const SettingsPage: React.FC<{ onClose: () => void }> = ({
   useEffect(() => {
     const fetchSettings = async () => {
       try {
+        if (!token) throw new Error("No auth token found");
+        console.log("Fetching settings with token:", token);
         const res = await fetch("http://localhost:8088/ui/settings", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -46,6 +49,10 @@ export const SettingsPage: React.FC<{ onClose: () => void }> = ({
         const data = await res.json();
         if (data.status) {
           setForm((prev) => ({ ...prev, ...data.data }));
+        }
+        if (data.status) {
+          setForm((prev) => ({ ...prev, ...data.data }));
+          updateUISettings(data.data);
         }
       } catch (err) {
         console.error("Fetch error:", err);
@@ -72,7 +79,12 @@ export const SettingsPage: React.FC<{ onClose: () => void }> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify(form),
-      });
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setForm((prev) => ({ ...prev, ...data.data }));
+          updateUISettings(data.data);
+        });
       alert("✅ Settings submitted successfully");
       onClose();
     } catch (err) {

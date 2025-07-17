@@ -14,6 +14,7 @@ import {
 } from "../firebase/firebase";
 import { ref, onValue } from "firebase/database";
 import { useEffect, useState } from "react";
+import { UISettings } from "../firebase/UIsettingsData";
 
 const BarGraphs = () => {
   // const [phphv, set] = useState(0);
@@ -122,10 +123,9 @@ const BarGraphs = () => {
     { name: "L3-N", value: 10 },
   ];
 
-  const upperLimit_1 = 84;
-  const lowerLimit_1 = 25;
-
-  const YAxislist_1 = [0, 320];
+  const upperLimit_1 = UISettings.A1;
+  const lowerLimit_1 = UISettings.A2;
+  const YAxislist_1 = [0, 400];
 
   const data_2 = [
     { name: "L1-N", value: 85 },
@@ -133,9 +133,8 @@ const BarGraphs = () => {
     { name: "L3-N", value: 10 },
   ];
 
-  const upperLimit_2 = 84;
-  const lowerLimit_2 = 25;
-
+  const upperLimit_2 = UISettings.A3;
+  const lowerLimit_2 = UISettings.A4;
   const YAxislist_2 = [0, 500];
 
   const data_3 = [
@@ -144,10 +143,8 @@ const BarGraphs = () => {
     { name: "L3-N", value: Math.floor(g_current_l3) },
   ];
 
-  const upperLimit_3 = 240;
-  // const lowerLimit_3 = 0;
-
-  const YAxislist_3 = [0, 320];
+  const upperLimit_3 = UISettings.A5;
+  const YAxislist_3 = [0, UISettings.A6];
 
   const data_4 = [
     { name: "L1-N", value: Math.floor(g_ph_n_v_l1) },
@@ -155,10 +152,9 @@ const BarGraphs = () => {
     { name: "L3-N", value: Math.floor(g_ph_n_v_l3) },
   ];
 
-  const upperLimit_4 = 230;
-  const lowerLimit_4 = 200;
-
-  const YAxislist_4 = [0, 320];
+  const upperLimit_4 = UISettings.A7;
+  const lowerLimit_4 = UISettings.A8;
+  const YAxislist_4 = [0, 400];
 
   const data_5 = [
     { name: "L1-N", value: Math.floor(g_ph_phv_l1) },
@@ -166,10 +162,9 @@ const BarGraphs = () => {
     { name: "L3-N", value: Math.floor(g_ph_phv_l3) },
   ];
 
-  const upperLimit_5 = 60;
-  const lowerLimit_5 = 50;
-
-  const YAxislist_5 = [0, 100];
+  const upperLimit_5 = UISettings.A9;
+  const lowerLimit_5 = UISettings.A10;
+  const YAxislist_5 = [0, 500];
 
   const getBarColor_1 = (value: number): string => {
     if (value > upperLimit_1) return "#911b00be";

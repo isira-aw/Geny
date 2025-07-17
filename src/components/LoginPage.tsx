@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Power, Trash2 } from "lucide-react";
 import { initializeFirebase } from "../components/firebase/firebase";
+import { updateUISettings } from "./firebase/UIsettingsData";
 
 interface Device {
   id: string;
@@ -38,11 +39,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     setError("");
 
     try {
-      const response = await fetch("https://a2z-geny-backend-production.up.railway.app/devices/signIn", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deviceUid, password }),
-      });
+      const response = await fetch(
+        "https://a2z-geny-backend-production.up.railway.app/devices/signIn",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceUid, password }),
+        }
+      );
 
       const data = await response.json();
 
@@ -80,6 +84,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           storageBucket: deviceConfig.storageBucket,
           messagingSenderId: deviceConfig.messagingSenderId,
           appId: deviceConfig.appId,
+        });
+        // After initializeFirebase(...)
+        const uiSettingsResponse = await fetch(
+          "http://localhost:8088/ui/settings",
+          {
+            headers: {
+              Authorization: `Bearer ${data.token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const uiSettingsData = await uiSettingsResponse.json();
+        console.log("🎯 Localhost response:", uiSettingsData);
+
+        if (uiSettingsData.status) {
+          updateUISettings(uiSettingsData.data);
+        }
+        // After updating UI settings
+        await fetch("http://localhost:8088/ui/settings", {
+          headers: {
+            Authorization: `Bearer ${data.token}`,
+            "Content-Type": "application/json",
+          },
         });
       } else {
         setError(data.message || "Invalid UID or password.");
