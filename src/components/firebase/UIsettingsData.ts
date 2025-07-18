@@ -19,5 +19,6 @@ export const UISettings: Record<string, number> = {
 };
 
 export function updateUISettings(newSettings: Record<string, number>) {
+  console.log("✅ UI settings updated successfully");
   Object.assign(UISettings, newSettings);
 }

@@ -85,30 +85,26 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           messagingSenderId: deviceConfig.messagingSenderId,
           appId: deviceConfig.appId,
         });
-        // After initializeFirebase(...)
-        const uiSettingsResponse = await fetch(
-          "http://localhost:8088/ui/settings",
-          {
-            headers: {
-              Authorization: `Bearer ${data.token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const baseUrl =
+          import.meta.env.VITE_BACKEND_URL || "http://localhost:8088";
 
-        const uiSettingsData = await uiSettingsResponse.json();
-        console.log("🎯 Localhost response:", uiSettingsData);
-
-        if (uiSettingsData.status) {
-          updateUISettings(uiSettingsData.data);
-        }
-        // After updating UI settings
-        await fetch("http://localhost:8088/ui/settings", {
+        const uiSettingsResponse = await fetch(`${baseUrl}/ui/settings`, {
           headers: {
             Authorization: `Bearer ${data.token}`,
             "Content-Type": "application/json",
           },
         });
+
+        if (!uiSettingsResponse.ok) {
+          throw new Error("Failed to fetch UI settings");
+        }
+
+        const uiSettingsData = await uiSettingsResponse.json();
+        console.log("✅ Localhost response:", uiSettingsData);
+
+        if (uiSettingsData.status) {
+          updateUISettings(uiSettingsData.data);
+        }
       } else {
         setError(data.message || "Invalid UID or password.");
       }
