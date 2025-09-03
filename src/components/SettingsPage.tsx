@@ -1,20 +1,30 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  IconButton,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import { Save, Settings, RefreshCw, AlertCircle, CheckCircle } from "lucide-react";
+import { apiService } from "./api";
 
-export const SettingsPage: React.FC<{ onClose: () => void }> = ({
-  onClose,
-}) => {
+interface SettingsForm {
+  A1: string;
+  A2: string;
+  A3: string;
+  A4: string;
+  A5: string;
+  A6: string;
+  A7: string;
+  A8: string;
+  A9: string;
+  A10: string;
+  A11: string;
+  A12: string;
+  A13: string;
+  A14: string;
+  A15: string;
+}
+
+export const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [form, setForm] = useState<SettingsForm>({
     A1: "",
     A2: "",
     A3: "",
@@ -32,23 +42,23 @@ export const SettingsPage: React.FC<{ onClose: () => void }> = ({
     A15: "",
   });
 
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem("deviceAuthToken");
 
   useEffect(() => {
     const fetchSettings = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await fetch("http://localhost:8088/ui/settings", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await res.json();
+        const data = await apiService.getSettings(token);
         if (data.status) {
           setForm((prev) => ({ ...prev, ...data.data }));
         }
       } catch (err) {
-        console.error("Fetch error:", err);
+        console.error("Fetch settings error:", err);
+        setMessage({ type: 'error', text: 'Failed to load settings' });
       } finally {
         setLoading(false);
       }
@@ -57,170 +67,192 @@ export const SettingsPage: React.FC<{ onClose: () => void }> = ({
     fetchSettings();
   }, [token]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+
     setSubmitting(true);
+    setMessage(null);
+
     try {
-      await fetch("http://localhost:8088/ui/settings", {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
-      alert("✅ Settings submitted successfully");
-      onClose();
+      await apiService.updateSettings(token, form);
+      setMessage({ type: 'success', text: 'Settings saved successfully!' });
     } catch (err) {
-      console.error("Submit error:", err);
-      alert("❌ Submission failed");
+      console.error("Submit settings error:", err);
+      setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-auto bg-gradient-to-br from-[#98A1BC] via-[#DED3C4] to-[#F4EBD3]  ">
-      <div className="flex justify-between p-4 items-center">
-        <Typography variant="h6" className="font-bold">
-          Settings Configuration
-        </Typography>
-        <IconButton onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
-      </div>
+  const handleReset = () => {
+    setForm({
+      A1: "", A2: "", A3: "", A4: "", A5: "", A6: "", A7: "", A8: "",
+      A9: "", A10: "", A11: "", A12: "", A13: "", A14: "", A15: ""
+    });
+    setMessage(null);
+  };
 
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <CircularProgress />
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#F9F3EF] to-[#D2C1B6] flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+          <RefreshCw className="w-8 h-8 text-[#456882] animate-spin mx-auto mb-4" />
+          <p className="text-[#1B3C53]">Loading settings...</p>
         </div>
-      ) : (
-        <Box className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextField
-            label="Answer A1"
-            name="A1"
-            value={form.A1}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A2"
-            name="A2"
-            value={form.A2}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A3"
-            name="A3"
-            value={form.A3}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A4"
-            name="A4"
-            value={form.A4}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A5"
-            name="A5"
-            value={form.A5}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A6"
-            name="A6"
-            value={form.A6}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A7"
-            name="A7"
-            value={form.A7}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A8"
-            name="A8"
-            value={form.A8}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A9"
-            name="A9"
-            value={form.A9}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A10"
-            name="A10"
-            value={form.A10}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A11"
-            name="A11"
-            value={form.A11}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A12"
-            name="A12"
-            value={form.A12}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A13"
-            name="A13"
-            value={form.A13}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A14"
-            name="A14"
-            value={form.A14}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Answer A15"
-            name="A15"
-            value={form.A15}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Box>
-      )}
+      </div>
+    );
+  }
 
-      <div className="p-6 border-t flex justify-end">
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={submitting}
-          sx={{
-            backgroundColor: "black",
-            color: "white",
-            "&:hover": { backgroundColor: "#333" },
-          }}
-        >
-          {submitting ? "Submitting..." : "Submit"}
-        </Button>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#F9F3EF] to-[#D2C1B6] p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Page Header */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-[#D2C1B6]/20">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#1B3C53] to-[#456882] rounded-lg flex items-center justify-center">
+              <Settings className="w-6 h-6 text-[#F9F3EF]" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-[#1B3C53]">System Configuration</h1>
+              <p className="text-[#456882]">Configure system parameters and device settings</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Message */}
+        {message && (
+          <div className={`bg-white rounded-xl shadow-lg border p-4 ${
+            message.type === 'success' 
+              ? 'border-green-200 bg-green-50' 
+              : 'border-red-200 bg-red-50'
+          }`}>
+            <div className="flex items-center space-x-3">
+              {message.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              )}
+              <p className={`${
+                message.type === 'success' ? 'text-green-700' : 'text-red-700'
+              } font-medium`}>
+                {message.text}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Settings Form */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg border border-[#D2C1B6]/20">
+          <div className="bg-gradient-to-r from-[#1B3C53] to-[#456882] px-6 py-4 rounded-t-xl">
+            <h2 className="text-lg font-semibold text-[#F9F3EF]">Configuration Parameters</h2>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Object.entries(form).map(([key, value]) => (
+                <div key={key} className="space-y-2">
+                  <label className="block text-sm font-medium text-[#1B3C53]">
+                    Parameter {key}
+                  </label>
+                  <textarea
+                    name={key}
+                    value={value}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full bg-[#F9F3EF] border border-[#D2C1B6] rounded-lg px-4 py-3 text-[#1B3C53] focus:ring-2 focus:ring-[#456882] focus:border-transparent resize-none transition-colors duration-200"
+                    placeholder={`Enter value for ${key}...`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Form Actions */}
+          <div className="bg-[#F9F3EF] px-6 py-4 rounded-b-xl border-t border-[#D2C1B6]/20">
+            <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={submitting}
+                className="px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50"
+              >
+                Reset All
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-6 py-3 bg-gradient-to-r from-[#1B3C53] to-[#456882] hover:from-[#456882] hover:to-[#1B3C53] text-white rounded-lg font-medium transition-all duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
+              >
+                {submitting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>Save Configuration</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        {/* Additional Settings Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* System Information */}
+          <div className="bg-white rounded-xl shadow-lg border border-[#D2C1B6]/20">
+            <div className="bg-gradient-to-r from-[#1B3C53] to-[#456882] px-6 py-4 rounded-t-xl">
+              <h3 className="text-lg font-semibold text-[#F9F3EF]">System Information</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-[#456882]">Device ID:</span>
+                <span className="text-[#1B3C53] font-medium">DEV-001</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#456882]">Firmware Version:</span>
+                <span className="text-[#1B3C53] font-medium">v2.1.3</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#456882]">Last Update:</span>
+                <span className="text-[#1B3C53] font-medium">2024-03-15</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#456882]">Configuration Status:</span>
+                <span className="text-green-600 font-medium">Active</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-xl shadow-lg border border-[#D2C1B6]/20">
+            <div className="bg-gradient-to-r from-[#1B3C53] to-[#456882] px-6 py-4 rounded-t-xl">
+              <h3 className="text-lg font-semibold text-[#F9F3EF]">Quick Actions</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <button className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                Export Configuration
+              </button>
+              <button className="w-full bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                Import Configuration
+              </button>
+              <button className="w-full bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                Backup Settings
+              </button>
+              <button className="w-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                Factory Reset
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
