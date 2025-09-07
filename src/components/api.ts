@@ -1,5 +1,6 @@
-// API service for centralized backend communication
-const BACKEND_URL = "https://a2z-geny-backend-production-a716.up.railway.app";
+// src/components/api.ts - Updated API service
+const BACKEND_URL = "http://localhost:8080";
+// const BACKEND_URL = "https://a2z-geny-backend-production-a716.up.railway.app";
 
 export interface Device {
   deviceUid: string;
@@ -23,27 +24,30 @@ export interface LoginResponse {
 }
 
 export interface DeviceResponse {
-  status: boolean;  // Changed from 'success' to 'status'
+  status: boolean;
   data?: Device[];
   message?: string;
 }
 
 export interface SettingsData {
-  A1: string;
-  A2: string;
-  A3: string;
-  A4: string;
-  A5: string;
-  A6: string;
-  A7: string;
-  A8: string;
-  A9: string;
-  A10: string;
-  A11: string;
-  A12: string;
-  A13: string;
-  A14: string;
-  A15: string;
+  deviceUid: string;
+  // A1-A15 Parameters with descriptive names
+  mainVoltageUpperLimit: number;        // A1
+  mainVoltageLowerLimit: number;        // A2
+  genVoltageUpperLimit: number;         // A3
+  genVoltageLowerLimit: number;         // A4
+  currentUpperLimit: number;            // A5
+  currentLowerLimit: number;            // A6
+  powerUpperLimit: number;              // A7
+  powerLowerLimit: number;              // A8
+  rpmUpperLimit: number;                // A9
+  rpmLowerLimit: number;                // A10
+  coolantTempUpperLimit: number;        // A11
+  coolantTempLowerLimit: number;        // A12
+  fuelLevelWarningLimit: number;        // A13
+  fuelLevelCriticalLimit: number;       // A14
+  batteryVoltageUpperLimit: number;     // A15
+  batteryVoltageLowerLimit?: number;    // Additional parameter
 }
 
 export interface SettingsResponse {
@@ -53,15 +57,27 @@ export interface SettingsResponse {
 }
 
 export interface DeviceConfig {
-  deviceId: string;
-  settings: Record<string, string | number | boolean>;
-  lastUpdated: string;
-  status: string;
+  deviceId?: string;
+  deviceUid: string;
+  deviceName: string;
+  lastLogin: string;
+  apiKey: string;
+  authDomain: string;
+  databaseURL: string;
+  projectId: string;
+  storageBucket: string;
+  messagingSenderId: string;
+  appId: string;
+  project_password?: string;
+  tsx?: string;
+  settings?: Record<string, string | number | boolean>;
+  status?: string;
 }
 
 export interface DeviceConfigResponse {
-  success: boolean;
-  config?: DeviceConfig;
+  status: boolean;
+  data?: DeviceConfig;
+  config?: DeviceConfig; // Some backends might use this field
   message?: string;
 }
 
@@ -169,10 +185,13 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    
+    const hasBody = options.body && options.method !== 'GET';
+    
     const config: RequestInit = {
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
+        ...(hasBody && { 'Content-Type': 'application/json' }),
         ...options.headers,
       },
       ...options,
@@ -182,12 +201,24 @@ class ApiService {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            const errorData = JSON.parse(errorText);
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          }
+        } catch {
+          // If we can't parse error, use default message
+        }
+        throw new Error(errorMessage);
       }
 
       const text = await response.text();
       if (!text) {
-        throw new Error('Empty response from server');
+        return { success: true } as T;
       }
 
       return JSON.parse(text) as T;
@@ -240,10 +271,8 @@ class ApiService {
   }
 
   async addDevice(token: string, deviceUid: string, deviceName: string): Promise<StandardApiResponse> {
-    // Debug log
     console.log('Adding device with payload:', { deviceUid, deviceName });
     
-    // Try multiple approaches to handle different backend expectations
     const methods = [
       // Method 1: Standard JSON
       () => this.request<StandardApiResponse>('/users/devices/assign', {
@@ -281,24 +310,12 @@ class ApiService {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
-            // Don't set Content-Type, let browser set it with boundary
           },
           body: formData,
         });
       },
-      
-      // Method 4: Plain text
-      () => this.request<StandardApiResponse>('/users/devices/assign', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'text/plain',
-        },
-        body: JSON.stringify({ deviceUid, deviceName }),
-      }),
     ];
 
-    // Try each method until one works
     for (let i = 0; i < methods.length; i++) {
       try {
         console.log(`Trying method ${i + 1} for device assignment`);
@@ -308,30 +325,12 @@ class ApiService {
       } catch (error) {
         console.log(`Method ${i + 1} failed:`, error);
         if (i === methods.length - 1) {
-          // If all methods fail, throw the last error
           throw error;
         }
       }
     }
     
-    // This shouldn't be reached, but TypeScript requires it
     throw new Error('All methods failed');
-  }
-
-  // Alternative method with different content type
-  async addDeviceForm(token: string, deviceUid: string, deviceName: string): Promise<StandardApiResponse> {
-    const formData = new URLSearchParams();
-    formData.append('deviceUid', deviceUid);
-    formData.append('deviceName', deviceName);
-
-    return this.request<StandardApiResponse>('/users/devices/assign', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-    });
   }
 
   async removeDevice(token: string, deviceUid: string): Promise<StandardApiResponse> {
@@ -352,13 +351,22 @@ class ApiService {
     });
   }
 
-  async updateSettings(token: string, settings: Record<string, string>): Promise<StandardApiResponse> {
+  async updateSettings(token: string, settings: Partial<SettingsData>): Promise<StandardApiResponse> {
     return this.request<StandardApiResponse>('/ui/settings', {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(settings),
+    });
+  }
+
+  async resetSettings(token: string): Promise<StandardApiResponse> {
+    return this.request<StandardApiResponse>('/ui/settings/reset', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
   }
 
@@ -387,7 +395,6 @@ class ApiService {
     });
   }
 
-  // Real-time monitoring
   async getMonitoringData(token: string): Promise<MonitoringResponse> {
     return this.request<MonitoringResponse>('/monitoring/data', {
       headers: {

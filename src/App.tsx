@@ -5,9 +5,10 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { AIMonitorPage } from './pages/AIMonitorPage';
 import { SchedulePage } from './pages/SchedulePage';
-import { UserLoginPage } from './components/UserLoginPage';
 import { DeviceManagementPage } from './components/DeviceManagementPage';
+import { SettingsProvider } from './components/SettingsContext';
 import { SettingsPage } from './components/SettingsPage';
+import { UserLoginPage } from './components/UserLoginPage';
 
 function App() {
   const [userAuthenticated, setUserAuthenticated] = useState(false);
@@ -84,7 +85,14 @@ function App() {
 
       {/* Main Application Routes (after both authentications) */}
       {userAuthenticated && deviceAuthenticated && (
-        <Route path="/" element={<DashboardLayout onLogout={handleDeviceLogout} />}>
+        <Route 
+          path="/*" 
+          element={
+            <SettingsProvider>
+              <DashboardLayout onLogout={handleDeviceLogout} />
+            </SettingsProvider>
+          }
+        >
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="reports" element={<ReportsPage />} />

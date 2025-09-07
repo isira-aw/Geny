@@ -215,19 +215,15 @@ export const SettingsPage: React.FC = () => {
             <div className="p-6 space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-[#456882]">Device ID:</span>
-                <span className="text-[#1B3C53] font-medium">DEV-001</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[#456882]">Firmware Version:</span>
-                <span className="text-[#1B3C53] font-medium">v2.1.3</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[#456882]">Last Update:</span>
-                <span className="text-[#1B3C53] font-medium">2024-03-15</span>
+                <span className="text-[#1B3C53] font-medium">{settings.deviceUid || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#456882]">Configuration Status:</span>
                 <span className="text-green-600 font-medium">Active</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#456882]">Last Updated:</span>
+                <span className="text-[#1B3C53] font-medium">{new Date().toLocaleDateString()}</span>
               </div>
             </div>
           </div>
@@ -238,17 +234,17 @@ export const SettingsPage: React.FC = () => {
               <h3 className="text-lg font-semibold text-[#F9F3EF]">Quick Actions</h3>
             </div>
             <div className="p-6 space-y-4">
-              <button className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
-                Export Configuration
-              </button>
-              <button className="w-full bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
-                Import Configuration
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200"
+              >
+                Reload Dashboard
               </button>
               <button className="w-full bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
-                Backup Settings
+                Export Settings
               </button>
-              <button className="w-full bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
-                Factory Reset
+              <button className="w-full bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                Import Settings
               </button>
             </div>
           </div>

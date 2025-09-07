@@ -26,10 +26,21 @@ export function initializeFirebase(config: FirebaseConfig): Promise<void> {
     }
 
     try {
+      // If already initialized, dispose of previous instance
+      if (isInitialized) {
+        console.log("Reinitializing Firebase with new config");
+        app = null;
+        database = null;
+        isInitialized = false;
+      }
+
       app = initializeApp(config);
       database = getDatabase(app);
       isInitialized = true;
-      console.log("Firebase initialized successfully");
+      console.log("Firebase initialized successfully with config:", {
+        projectId: config.projectId,
+        databaseURL: config.databaseURL
+      });
       resolve();
     } catch (error) {
       console.error("Firebase initialization error:", error);
@@ -47,4 +58,11 @@ export function getDatabaseInstance(): Database {
 
 export function isFirebaseInitialized(): boolean {
   return isInitialized;
+}
+
+export function resetFirebase(): void {
+  app = null;
+  database = null;
+  isInitialized = false;
+  console.log("Firebase instance reset");
 }

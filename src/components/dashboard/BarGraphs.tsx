@@ -8,36 +8,30 @@ import {
   Cell,
   LabelList,
 } from "recharts";
-import {
-  getDatabaseInstance,
-  isFirebaseInitialized,
-} from "../firebase/firebase";
 import { ref, onValue } from "firebase/database";
 import { useEffect, useState } from "react";
+import { getDatabaseInstance, isFirebaseInitialized } from "../firebase/firebase";
+import { useSettings } from "../SettingsContext";
 
 const BarGraphs = () => {
-  // const [phphv, set] = useState(0);
-  // const [phphv, set] = useState(0);
-  // const [phphv, set] = useState(0);
+  // Real-time data from Firebase
+  const [mainL1_NVoltage, setMainL1_NVoltage] = useState(0);
+  const [mainL2_NVoltage, setMainL2_NVoltage] = useState(0);
+  const [mainL3_NVoltage, setMainL3_NVoltage] = useState(0);
 
-  // const [phphv, set] = useState(0);
-  // const [phphv, set] = useState(0);
-  // const [phphv, set] = useState(0);
+  const [genL1_NVoltage, setGenL1_NVoltage] = useState(0);
+  const [genL2_NVoltage, setGenL2_NVoltage] = useState(0);
+  const [genL3_NVoltage, setGenL3_NVoltage] = useState(0);
 
-  const [g_current_l1, set_g_current_l1] = useState(0);
-  const [g_current_l2, set_g_current_l2] = useState(0);
-  const [g_current_l3, set_g_current_l3] = useState(0);
-
-  const [g_ph_n_v_l1, set_g_ph_n_v_l1] = useState(0);
-  const [g_ph_n_v_l2, set_g_ph_n_v_l2] = useState(0);
-  const [g_ph_n_v_l3, set_g_ph_n_v_l3] = useState(0);
-
-  const [g_ph_phv_l1, set_g_ph_phv_l1] = useState(0);
-  const [g_ph_phv_l2, set_g_ph_phv_l2] = useState(0);
-  const [g_ph_phv_l3, set_g_ph_phv_l3] = useState(0);
+  const [genL1_NCurrent, setGenL1_NCurrent] = useState(0);
+  const [genL2_NCurrent, setGenL2_NCurrent] = useState(0);
+  const [genL3_NCurrent, setGenL3_NCurrent] = useState(0);
 
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseError, setFirebaseError] = useState<string | null>(null);
+
+  // Get settings from context
+  const { settings, firebaseInitialized } = useSettings();
 
   useEffect(() => {
     let unsubscribe: () => void;
@@ -51,18 +45,21 @@ const BarGraphs = () => {
         unsubscribe = onValue(sensorRef, (snapshot) => {
           const data = snapshot.val();
 
-          set_g_current_l1(data?.mainL1_NVoltage ?? 0);
-          set_g_current_l2(data?.mainL2_NVoltage ?? 0);
-          set_g_current_l3(data?.mainL3_NVoltage ?? 0);
+          // Main voltage data
+          setMainL1_NVoltage(data?.mainL1_NVoltage ?? 0);
+          setMainL2_NVoltage(data?.mainL2_NVoltage ?? 0);
+          setMainL3_NVoltage(data?.mainL3_NVoltage ?? 0);
 
-          set_g_ph_n_v_l1(data?.genL1_NVoltage ?? 0);
-          set_g_ph_n_v_l2(data?.genL2_NVoltage ?? 0);
-          set_g_ph_n_v_l3(data?.genL3_NVoltage ?? 0);
+          // Generator voltage data
+          setGenL1_NVoltage(data?.genL1_NVoltage ?? 0);
+          setGenL2_NVoltage(data?.genL2_NVoltage ?? 0);
+          setGenL3_NVoltage(data?.genL3_NVoltage ?? 0);
 
-          set_g_ph_phv_l1(data?.genL1_NCurrent ?? 0);
-          set_g_ph_phv_l2(data?.genL2_NCurrent ?? 0);
-          set_g_ph_phv_l3(data?.genL3_NCurrent ?? 0);
-          // setBatteryLife(data?.batteryVoltage ?? 0);
+          // Generator current data
+          setGenL1_NCurrent(data?.genL1_NCurrent ?? 0);
+          setGenL2_NCurrent(data?.genL2_NCurrent ?? 0);
+          setGenL3_NCurrent(data?.genL3_NCurrent ?? 0);
+
           setIsLoading(false);
           setFirebaseError(null);
         });
@@ -73,11 +70,11 @@ const BarGraphs = () => {
       }
     };
 
-    if (isFirebaseInitialized()) {
+    if (isFirebaseInitialized() && firebaseInitialized) {
       setupFirebaseListener();
     } else {
       initializationCheck = setInterval(() => {
-        if (isFirebaseInitialized()) {
+        if (isFirebaseInitialized() && firebaseInitialized) {
           clearInterval(initializationCheck);
           setupFirebaseListener();
         }
@@ -88,7 +85,8 @@ const BarGraphs = () => {
       if (unsubscribe) unsubscribe();
       if (initializationCheck) clearInterval(initializationCheck);
     };
-  }, []);
+  }, [firebaseInitialized]);
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-2xl p-6 shadow-lg text-center">
@@ -111,261 +109,166 @@ const BarGraphs = () => {
           onClick={() => window.location.reload()}
           className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
-          System Data
+          Retry Connection
         </button>
       </div>
     );
   }
-  const data_1 = [
-    { name: "L1-N", value: 85 },
-    { name: "L2-N", value: 50 },
-    { name: "L3-N", value: 10 },
+
+  // Use settings for thresholds or defaults
+  const mainVoltageUpper = settings?.mainVoltageUpperLimit ?? 240;
+  const mainVoltageLower = settings?.mainVoltageLowerLimit ?? 200;
+  const genVoltageUpper = settings?.genVoltageUpperLimit ?? 240;
+  const genVoltageLower = settings?.genVoltageLowerLimit ?? 200;
+  const currentUpper = settings?.currentUpperLimit ?? 100;
+
+  // Chart data with real-time values
+  const mainVoltageData = [
+    { name: "L1-N", value: Math.floor(mainL1_NVoltage) },
+    { name: "L2-N", value: Math.floor(mainL2_NVoltage) },
+    { name: "L3-N", value: Math.floor(mainL3_NVoltage) },
   ];
 
-  const upperLimit_1 = 84;
-  const lowerLimit_1 = 25;
-
-  const YAxislist_1 = [0, 320];
-
-  const data_2 = [
-    { name: "L1-N", value: 85 },
-    { name: "L2-N", value: 92 },
-    { name: "L3-N", value: 10 },
+  const genVoltageData = [
+    { name: "L1-N", value: Math.floor(genL1_NVoltage) },
+    { name: "L2-N", value: Math.floor(genL2_NVoltage) },
+    { name: "L3-N", value: Math.floor(genL3_NVoltage) },
   ];
 
-  const upperLimit_2 = 84;
-  const lowerLimit_2 = 25;
-
-  const YAxislist_2 = [0, 500];
-
-  const data_3 = [
-    { name: "L1-N", value: Math.floor(g_current_l1) },
-    { name: "L2-N", value: Math.floor(g_current_l2) },
-    { name: "L3-N", value: Math.floor(g_current_l3) },
+  const genCurrentData = [
+    { name: "L1-N", value: Math.floor(genL1_NCurrent) },
+    { name: "L2-N", value: Math.floor(genL2_NCurrent) },
+    { name: "L3-N", value: Math.floor(genL3_NCurrent) },
   ];
 
-  const upperLimit_3 = 240;
-  // const lowerLimit_3 = 0;
-
-  const YAxislist_3 = [0, 320];
-
-  const data_4 = [
-    { name: "L1-N", value: Math.floor(g_ph_n_v_l1) },
-    { name: "L2-N", value: Math.floor(g_ph_n_v_l2) },
-    { name: "L3-N", value: Math.floor(g_ph_n_v_l3) },
-  ];
-
-  const upperLimit_4 = 230;
-  const lowerLimit_4 = 200;
-
-  const YAxislist_4 = [0, 320];
-
-  const data_5 = [
-    { name: "L1-N", value: Math.floor(g_ph_phv_l1) },
-    { name: "L2-N", value: Math.floor(g_ph_phv_l2) },
-    { name: "L3-N", value: Math.floor(g_ph_phv_l3) },
-  ];
-
-  const upperLimit_5 = 60;
-  const lowerLimit_5 = 50;
-
-  const YAxislist_5 = [0, 100];
-
-  const getBarColor_1 = (value: number): string => {
-    if (value > upperLimit_1) return "#911b00be";
-    if (value < lowerLimit_1) return "#911b00be ";
-    return "#00aa0eb6";
-  };
-  const getBarColor_2 = (value: number): string => {
-    if (value > upperLimit_2) return "#911b00be";
-    if (value < lowerLimit_2) return "#911b00be ";
-    return "#00aa0eb6";
+  // Color functions using settings
+  const getMainVoltageColor = (value: number): string => {
+    if (value > mainVoltageUpper || value < mainVoltageLower) return "#dc2626";
+    return "#16a34a";
   };
 
-  const getBarColor_3 = (value: number): string => {
-    if (value > upperLimit_3) return "#911b00be";
-    // if (value < lowerLimit_3) return "#911b00be ";
-    return "#00aa0eb6";
+  const getGenVoltageColor = (value: number): string => {
+    if (value > genVoltageUpper || value < genVoltageLower) return "#dc2626";
+    return "#16a34a";
   };
 
-  const getBarColor_4 = (value: number): string => {
-    if (value > upperLimit_4) return "#911b00be";
-    if (value < lowerLimit_4) return "#911b00be ";
-    return "#00aa0eb6";
-  };
-
-  const getBarColor_5 = (value: number): string => {
-    if (value > upperLimit_5) return "#911b00be";
-    if (value < lowerLimit_5) return "#911b00be ";
-    return "#00aa0eb6";
+  const getCurrentColor = (value: number): string => {
+    if (value > currentUpper) return "#dc2626";
+    return "#16a34a";
   };
 
   return (
-    <div className="rounded-2xl shadow-lg p-2 bg-gray-100 text-sm text-gray-700 mb-1 mt-2">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10 w-full max-w-6xl mx-auto">
-        {/* LEFT SIDE: 2/5 on large screens */}
-        <div className="bg-transparent p-4 flex items-center justify-center text-center w-full gap-2 col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2">
-          <span className="text-2xl">⚡</span>
-          <span className="text-sm text-gray-600">Load :</span>
-          <span className="text-lg font-semibold text-gray-800">50</span>
-          <span className="text-sm text-gray-600">Hz</span>
+    <div className="rounded-2xl shadow-lg p-4 bg-[#F9F3EF] border border-[#D2C1B6]/20">
+      {/* System Status Header */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-xl flex items-center justify-center text-center border border-[#D2C1B6]/20">
+          <span className="text-2xl mr-2">⚡</span>
+          <span className="text-sm text-[#456882]">Load:</span>
+          <span className="text-lg font-semibold text-[#1B3C53] ml-1">50</span>
+          <span className="text-sm text-[#456882] ml-1">Hz</span>
         </div>
 
-        {/* RIGHT SIDE: 3/5 on large screens */}
-        <div className="bg-transparent p-4 flex items-center justify-center text-center w-full gap-2 col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-3">
-          <span className="text-2xl">🧰</span>
-          <span className="text-sm text-gray-600">Generator :</span>
-          <span className="text-lg font-semibold text-gray-800">50</span>
-          <span className="text-sm text-gray-600">Hz</span>
+        <div className="bg-white p-4 rounded-xl flex items-center justify-center text-center border border-[#D2C1B6]/20">
+          <span className="text-2xl mr-2">🔧</span>
+          <span className="text-sm text-[#456882]">Generator:</span>
+          <span className="text-lg font-semibold text-[#1B3C53] ml-1">50</span>
+          <span className="text-sm text-[#456882] ml-1">Hz</span>
         </div>
       </div>
 
-      {/* Responsive Grid: 1 column on mobile, 5 columns on large screens */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
-        {/* Bar Graph Card 1 */}
-        <div className="p-2 rounded shadow bg-white">
-          <h2 className="text-base font-semibold mb-2 text-center">Ph-N[N]</h2>
-          <ResponsiveContainer width="100%" height={200} className="-ml-4">
-            <BarChart data={data_1}>
-              <XAxis dataKey="name" />
-              <YAxis domain={YAxislist_1} />
-              <ReferenceLine y={upperLimit_1} stroke="red" strokeWidth={1} />
-              <ReferenceLine y={lowerLimit_1} stroke="red" strokeWidth={1} />
-              <Bar dataKey="value">
-                {data_1.map((entry, index) => (
+      {/* Chart Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Main Voltage Chart */}
+        <div className="bg-white p-4 rounded-xl shadow-md border border-[#D2C1B6]/20">
+          <h2 className="text-base font-semibold mb-3 text-center text-[#1B3C53]">Main Ph-N[V]</h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={mainVoltageData}>
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#1B3C53" }} />
+              <YAxis domain={[0, 320]} tick={{ fontSize: 10, fill: "#456882" }} />
+              <ReferenceLine y={mainVoltageUpper} stroke="#dc2626" strokeWidth={2} strokeDasharray="5 5" />
+              <ReferenceLine y={mainVoltageLower} stroke="#dc2626" strokeWidth={2} strokeDasharray="5 5" />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {mainVoltageData.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
-                    fill={getBarColor_1(entry.value)}
+                    key={`main-voltage-${index}`}
+                    fill={getMainVoltageColor(entry.value)}
                   />
                 ))}
                 <LabelList
                   dataKey="value"
                   position="top"
-                  fill="Black"
+                  fill="#1B3C53"
                   fontSize={12}
+                  fontWeight="bold"
                 />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Bar Graph Card 2 */}
-        <div className="p-2 rounded shadow bg-white">
-          <h2 className="text-base font-semibold mb-2 text-center">Ph-Ph[V]</h2>
-          <ResponsiveContainer width="100%" height={200} className="-ml-4">
-            <BarChart data={data_2}>
-              <XAxis dataKey="name" />
-              <YAxis domain={YAxislist_2} />
-              <ReferenceLine y={upperLimit_2} stroke="red" strokeWidth={1} />
-              <ReferenceLine y={lowerLimit_2} stroke="red" strokeWidth={1} />
-              <Bar dataKey="value">
-                {data_2.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={getBarColor_2(entry.value)}
-                  />
-                ))}
-                <LabelList
-                  dataKey="value"
-                  position="top"
-                  fill="Black"
-                  fontSize={12}
-                />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Bar Graph Card 3 */}
-        <div className="p-2 rounded shadow bg-white">
-          <h2 className="flex items-center space-x-2 text-base font-semibold mb-2 text-center">
-            <div className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-500 text-gray-500 text-sm font-semibold mr-2 ml-7">
-              G
-            </div>
-            Current[A]
+        {/* Generator Voltage Chart */}
+        <div className="bg-white p-4 rounded-xl shadow-md border border-[#D2C1B6]/20">
+          <h2 className="text-base font-semibold mb-3 text-center text-[#1B3C53]">
+            <span className="inline-flex items-center">
+              <div className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-[#456882] text-[#456882] text-xs font-bold mr-2">
+                G
+              </div>
+              Ph-N[V]
+            </span>
           </h2>
-          <ResponsiveContainer width="100%" height={200} className="-ml-4">
-            <BarChart data={data_3}>
-              <XAxis dataKey="name" />
-              <YAxis domain={YAxislist_3} />
-              <ReferenceLine y={upperLimit_3} stroke="red" strokeWidth={1} />
-              {/* <ReferenceLine y={lowerLimit_3} stroke="red" strokeWidth={3} /> */}
-              <Bar dataKey="value">
-                {data_3.map((entry, index) => (
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={genVoltageData}>
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#1B3C53" }} />
+              <YAxis domain={[0, 320]} tick={{ fontSize: 10, fill: "#456882" }} />
+              <ReferenceLine y={genVoltageUpper} stroke="#dc2626" strokeWidth={2} strokeDasharray="5 5" />
+              <ReferenceLine y={genVoltageLower} stroke="#dc2626" strokeWidth={2} strokeDasharray="5 5" />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {genVoltageData.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
-                    fill={getBarColor_3(entry.value)}
+                    key={`gen-voltage-${index}`}
+                    fill={getGenVoltageColor(entry.value)}
                   />
                 ))}
                 <LabelList
                   dataKey="value"
                   position="top"
-                  fill="Black"
+                  fill="#1B3C53"
                   fontSize={12}
+                  fontWeight="bold"
                 />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Bar Graph Card 4 */}
-        <div className="p-2 rounded shadow bg-white">
-          <h2 className="flex items-center space-x-2 text-base font-semibold mb-2 text-center">
-            <div className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-500 text-gray-500 text-sm font-semibold mr-2 ml-7">
-              G
-            </div>
-            Ph-N[N]
+        {/* Generator Current Chart */}
+        <div className="bg-white p-4 rounded-xl shadow-md border border-[#D2C1B6]/20">
+          <h2 className="text-base font-semibold mb-3 text-center text-[#1B3C53]">
+            <span className="inline-flex items-center">
+              <div className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-[#456882] text-[#456882] text-xs font-bold mr-2">
+                G
+              </div>
+              Current[A]
+            </span>
           </h2>
-          <ResponsiveContainer width="100%" height={200} className="-ml-4">
-            <BarChart data={data_4}>
-              <XAxis dataKey="name" />
-              <YAxis domain={YAxislist_4} />
-              <ReferenceLine y={upperLimit_4} stroke="red" strokeWidth={1} />
-              <ReferenceLine y={lowerLimit_4} stroke="red" strokeWidth={1} />
-              <Bar dataKey="value">
-                {data_4.map((entry, index) => (
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={genCurrentData}>
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#1B3C53" }} />
+              <YAxis domain={[0, 120]} tick={{ fontSize: 10, fill: "#456882" }} />
+              <ReferenceLine y={currentUpper} stroke="#dc2626" strokeWidth={2} strokeDasharray="5 5" />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {genCurrentData.map((entry, index) => (
                   <Cell
-                    key={`cell-${index}`}
-                    fill={getBarColor_4(entry.value)}
+                    key={`gen-current-${index}`}
+                    fill={getCurrentColor(entry.value)}
                   />
                 ))}
                 <LabelList
                   dataKey="value"
                   position="top"
-                  fill="Black"
+                  fill="#1B3C53"
                   fontSize={12}
-                />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Bar Graph Card 5 */}
-        <div className="p-2 rounded shadow bg-white">
-          <h2 className="flex items-center space-x-2 text-base font-semibold mb-2 text-center">
-            <div className="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-500 text-gray-500 text-sm font-semibold mr-2 ml-7">
-              G
-            </div>
-            PH-N[V]
-          </h2>
-          <ResponsiveContainer width="100%" height={200} className="-ml-4">
-            <BarChart data={data_5}>
-              <XAxis tick={{ fontSize: 12, fill: "black" }} dataKey="name" />
-              <YAxis domain={YAxislist_5} />
-              <ReferenceLine y={upperLimit_5} stroke="red" strokeWidth={1} />
-              <ReferenceLine y={lowerLimit_5} stroke="red" strokeWidth={1} />
-              <Bar dataKey="value">
-                {data_5.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={getBarColor_5(entry.value)}
-                  />
-                ))}
-                <LabelList
-                  dataKey="value"
-                  position="top"
-                  fill="Black"
-                  fontSize={12}
+                  fontWeight="bold"
                 />
               </Bar>
             </BarChart>
